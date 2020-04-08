@@ -83,10 +83,10 @@ async fn readPage(url: &str) -> Result<(), Box<dyn std::error::Error>>{
     println!("read page");
     println!("{}",url);
     let uri = url.parse::<hyper::Uri>()?;
-    if uri.scheme_str() != Some("https") {
-        println!("This example only works with 'https' URLs.");
-        return Ok(());
-    }
+    // if uri.scheme_str() != Some("https") {
+    //     println!("This example only works with 'https' URLs.");
+    //     return Ok(());
+    // }
     fetch_url(uri).await;
     Ok(())
 }
