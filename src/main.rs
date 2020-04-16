@@ -3,16 +3,16 @@ extern crate clap;
 use std::collections::VecDeque;
 //use std::error::Error;
 use std::io;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, Bytes, Error, Read, Seek, SeekFrom, Write};
 
 use clap::{App, Arg};
 use std::fs::File;
 use std::time::Duration;
 
-use hyper::body::HttpBody as _;
-use hyper_tls::HttpsConnector;
-use tokio::io::{AsyncWriteExt as _};
+use hyper::body::{Buf, HttpBody};
 use hyper::client::HttpConnector;
+use hyper_tls::HttpsConnector;
+use tokio::io::AsyncWriteExt as _;
 
 //type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -37,11 +37,12 @@ fn lines_with_ending<B: BufRead>(reader: B) -> LinesWithEnding<B> {
     LinesWithEnding { buf: reader }
 }
 
-fn tail<R: Read, W: Write>(input: R, output: W, num: usize) -> io::Result<()> {
+fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
     println!("tail!!!");
-
+    let stdout = io::stdout();
+    let stdout_lock = stdout.lock();
     //let mut reader = BufReader::new(input);
-    let mut writer = io::BufWriter::new(output);
+    let mut writer = io::BufWriter::new(stdout_lock);
     let lines = lines_with_ending(io::BufReader::new(input)).skip(num);
 
     let mut deque = VecDeque::new();
@@ -62,26 +63,10 @@ fn tail<R: Read, W: Write>(input: R, output: W, num: usize) -> io::Result<()> {
     Ok(())
 }
 
-// fn readPage<W: Write>(url: &str, output: W) -> std::io::Result<()> {
-//     println!("Write");
-//     //let id_addr = net::IpAddr::V4(Ipv4Addr::new(92,123,13,97));
-//     let mut connection =  match TcpStream::connect("2a02:26f0:10e:1b1::32ac") {
-//         Ok(c) => c,
-//         Err(e) => return Err(e)
-//     };
-//
-//     let mut buf: Vec<u8> = Vec::new();
-//     connection.read_to_end(&mut buf);
-//     let mut writer = io::BufWriter::new(output);
-//     writer.write_all(&buf[..])?;
-//     writer.flush()?;
-//     Ok(())
-// }
-
 #[tokio::main]
-async fn readPage(url: &str) -> Result<(), Box<dyn std::error::Error>>{
+async fn readPage(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     println!("read page");
-    println!("{}",url);
+    println!("{}", url);
     let uri = url.parse::<hyper::Uri>()?;
     // if uri.scheme_str() != Some("https") {
     //     println!("This example only works with 'https' URLs.");
@@ -105,9 +90,9 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     // (instead of buffering and printing at the end).
     println!("Body:\n");
     while let Some(next) = res.data().await {
-        let chunk = match next {
+        let mut chunk = match next {
             Ok(b) => b,
-            Err(e) => return Err(Box::new(e))
+            Err(e) => return Err(Box::new(e)),
         };
         tokio::io::stdout().write_all(&chunk).await?;
     }
@@ -116,19 +101,12 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn follow<W: Write>(filename: &str, output: W, num: usize) -> io::Result<()> {
+fn follow(filename: &str, num: usize) -> io::Result<()> {
     //println!("{}", num);
-
-    // let mut reader = BufReader::<File>::new(file);
-    // let file_end_pos = reader.seek(SeekFrom::End(0))?;
-    // let mut writer = io::BufWriter::new(output);
-
+    let stdout = io::stdout();
+    let stdout_lock = stdout.lock();
     let file = File::open(filename)?;
-    // {Err(
-    //     Err(e) =>  println!("tail: file '{}' has become inaccessible: {}", file, e)?,
-    //     Ok(f) => f
-    // };
-    let mut writer = io::BufWriter::new(output);
+    let mut writer = io::BufWriter::new(stdout_lock);
     let mut buf: Vec<u8> = Vec::new();
 
     let mut reader = BufReader::new(file);
@@ -182,8 +160,7 @@ fn main() {
                 .required(false),
         )
         .get_matches();
-    let stdout = io::stdout();
-    let stdout_lock = stdout.lock();
+
     if let Some(filename) = matches.value_of("print") {
         let file = match File::open(filename) {
             Ok(f) => f,
@@ -192,12 +169,12 @@ fn main() {
                 return;
             }
         };
-        match tail(file, stdout_lock, 10) {
+        match tail(file, 10) {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
         }
     } else if let Some(filename) = matches.value_of("follow") {
-        match follow(filename, stdout_lock, 10) {
+        match follow(filename, 10) {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
         }
