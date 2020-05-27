@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 mod http_data;
 
 extern crate clap;
@@ -28,6 +29,33 @@ use hyper::{body::HttpBody, client::HttpConnector};
 use hyper_tls::HttpsConnector;
 use tokio::{signal, task};
 use tokio::time::{self};
+=======
+extern crate clap;
+extern crate reqwest;
+// #[macro_use]
+//extern crate tokio;
+// extern crate hyper;
+// extern crate hyper_tls;
+
+use std::collections::VecDeque;
+use std::fs::File;
+use std::future::Future;
+use std::io;
+use std::io::{BufRead, BufReader, Bytes, Error, Read, Seek, SeekFrom, Write};
+use std::time::Duration;
+
+use clap::{App, Arg};
+use reqwest::{Client, Response};
+use tokio::signal;
+use tokio::stream::{self, StreamExt};
+
+// use hyper::body::{Buf, HttpBody};
+// use hyper::client::HttpConnector;
+// use hyper_tls::HttpsConnector;
+// use tokio::io::AsyncWriteExt as _;
+// use tokio::signal;
+// use tokio::signal::unix::{signal, SignalKind};
+>>>>>>> 8facd3a... reqwest
 
 use crossterm::terminal::ClearType;
 use regex::Regex;
@@ -80,6 +108,7 @@ fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
     Ok(())
 }
 
+<<<<<<< HEAD
 async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     let uri = url.parse::<hyper::Uri>()?;
 
@@ -247,6 +276,45 @@ async fn fetch_url(url: hyper::Uri) -> Result<Option<HttpData>, Box<dyn std::err
 
 fn follow(filename: &str, _num: usize) -> io::Result<()> {
     //println!("{}", num);
+=======
+#[tokio::main]
+async fn follow_url(url: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("{}", url);
+
+    println!("Los gehts");
+    tokio::select! {
+    _ = fetch_url(url) => println!("url fetched!"),
+    _ = signal::ctrl_c() => println!("Abbruch")
+    }
+    Ok(())
+}
+
+async fn fetch_url(url: &str) -> Result<(), Box<dyn std::error::Error + 'static>> {
+    println!("fetch_url");
+    let c = Client::new();
+    let mut response = c.get(url).send().await?;
+    println!("{}", response.status());
+    loop {
+        let c = response.chunk().await;
+        match c {
+            Err(e) => {
+                println!("Fehler beim Lesen!");
+                break;
+            }
+            Ok(v) =>  {
+                match v {
+                    Some(chunk) => println!("Chunk: {:?}", chunk),
+                    None => tokio::time::delay_for(Duration::from_secs(3)).await,
+                }
+            }
+        };
+        //println!("Chunk: {:?}", chunk);
+    }
+    Ok(())
+}
+
+fn follow(filename: &str, num: usize) -> io::Result<()> {
+>>>>>>> 8facd3a... reqwest
     let stdout = io::stdout();
     let stdout_lock = stdout.lock();
     let file = File::open(filename)?;
@@ -323,7 +391,11 @@ async fn main() {
             Err(e) => println!("{}", e),
         }
     } else if let Some(url) = matches.value_of("http") {
+<<<<<<< HEAD
         match read_page(url).await {
+=======
+        match follow_url(url) {
+>>>>>>> 8facd3a... reqwest
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
             //_ => {}
