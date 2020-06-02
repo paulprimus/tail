@@ -64,7 +64,7 @@ fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
 }
 
 #[tokio::main]
-async fn readPage(url: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn read_page(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     println!("read page");
     println!("{}", url);
     let uri = url.parse::<hyper::Uri>()?;
@@ -90,7 +90,7 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     // (instead of buffering and printing at the end).
     println!("Body:\n");
     println!("Is End of Stream1 {}",res.is_end_stream());
-    while let Some(next) = res.data().await {
+    while let Some(next) = res.body_mut().data().await { // data: Result<Bytes,Error>
         println!("Is End of Stream2 {}",res.is_end_stream());
         let mut chunk = match next {
             Ok(b) => b,
@@ -182,7 +182,7 @@ fn main() {
             Err(e) => println!("{}", e),
         }
     } else if let Some(url) = matches.value_of("http") {
-        match readPage(url) {
+        match read_page(url) {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
             _ => {}
