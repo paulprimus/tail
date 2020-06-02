@@ -89,13 +89,16 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     // Stream the body, writing each chunk to stdout as we get it
     // (instead of buffering and printing at the end).
     println!("Body:\n");
+    println!("Is End of Stream1 {}",res.is_end_stream());
     while let Some(next) = res.data().await {
+        println!("Is End of Stream2 {}",res.is_end_stream());
         let mut chunk = match next {
             Ok(b) => b,
             Err(e) => return Err(Box::new(e)),
         };
         tokio::io::stdout().write_all(&chunk).await?;
     }
+
 
     println!("\n\nDone!");
     Ok(())
