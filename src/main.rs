@@ -13,6 +13,7 @@ use hyper::body::{Buf, HttpBody};
 use hyper::client::HttpConnector;
 use hyper_tls::HttpsConnector;
 use tokio::io::AsyncWriteExt as _;
+use hyper::Body;
 
 //type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -89,14 +90,27 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     // Stream the body, writing each chunk to stdout as we get it
     // (instead of buffering and printing at the end).
     println!("Body:\n");
-    println!("Is End of Stream1 {}",res.is_end_stream());
-    while let Some(next) = res.body_mut().data().await { // data: Result<Bytes,Error>
-        println!("Is End of Stream2 {}",res.is_end_stream());
-        let mut chunk = match next {
-            Ok(b) => b,
-            Err(e) => return Err(Box::new(e)),
-        };
-        tokio::io::stdout().write_all(&chunk).await?;
+   // println!("Is End of Stream1 {}",res.is_end_stream());
+    // while let Some(next) = res.body_mut().data().await { // data: Result<Bytes,Error>
+    //     println!("Is End of Stream2 {}",res.is_end_stream());
+    //     let mut chunk = match next {
+    //         Ok(b) => b,
+    //         Err(e) => return Err(Box::new(e)),
+    //     };
+    //     tokio::io::stdout().write_all(&chunk).await?;
+    // }
+    loop {
+        let data =res.body_mut().data().await;
+        match data {
+            Some(b)  => {
+              match b {
+                  Ok(v) => tokio::io::stdout().write_all(&v).await?,
+                  Err(e) => return Err(Box::new(e))
+              }
+            },
+            None => tokio::time::delay_for(Duration::from_secs(3)).await
+        }
+
     }
 
 
