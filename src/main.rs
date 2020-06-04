@@ -11,9 +11,11 @@ use std::time::Duration;
 
 use hyper::body::{Buf, HttpBody};
 use hyper::client::HttpConnector;
-use hyper_tls::HttpsConnector;
-use tokio::io::AsyncWriteExt as _;
 use hyper::Body;
+use hyper_tls::HttpsConnector;
+use std::alloc::handle_alloc_error;
+use tokio::io::AsyncWriteExt as _;
+use tokio::signal;
 
 //type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -73,7 +75,11 @@ async fn read_page(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     //     println!("This example only works with 'https' URLs.");
     //     return Ok(());
     // }
-    fetch_url(uri).await;
+    //fetch_url(uri).await;
+    tokio::select! {
+    _ = fetch_url(uri) => println!("url fetched!"),
+    _ = signal::ctrl_c() => println!("Abbruch")
+    }
     Ok(())
 }
 
@@ -90,7 +96,7 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     // Stream the body, writing each chunk to stdout as we get it
     // (instead of buffering and printing at the end).
     println!("Body:\n");
-   // println!("Is End of Stream1 {}",res.is_end_stream());
+    // println!("Is End of Stream1 {}",res.is_end_stream());
     // while let Some(next) = res.body_mut().data().await { // data: Result<Bytes,Error>
     //     println!("Is End of Stream2 {}",res.is_end_stream());
     //     let mut chunk = match next {
@@ -99,20 +105,23 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     //     };
     //     tokio::io::stdout().write_all(&chunk).await?;
     // }
+    let mut http_body: &mut Body = res.body_mut();
     loop {
-        let data =res.body_mut().data().await;
-        match data {
-            Some(b)  => {
-              match b {
-                  Ok(v) => tokio::io::stdout().write_all(&v).await?,
-                  Err(e) => return Err(Box::new(e))
-              }
-            },
-            None => tokio::time::delay_for(Duration::from_secs(3)).await
+        if http_body.is_end_stream() {
+            println!("Ende Http");
+            tokio::time::delay_for(Duration::from_secs(3)).await;
+            continue;
         }
+        let data = http_body.data().await;
 
+        match data {
+            Some(b) => match b {
+                Ok(v) => tokio::io::stdout().write_all(&v).await?,
+                Err(e) => return Err(Box::new(e)),
+            },
+            None => tokio::time::delay_for(Duration::from_secs(3)).await,
+        }
     }
-
 
     println!("\n\nDone!");
     Ok(())
