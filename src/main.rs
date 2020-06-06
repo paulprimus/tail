@@ -1,19 +1,17 @@
 extern crate clap;
 
 use std::collections::VecDeque;
-//use std::error::Error;
 use std::io;
-use std::io::{BufRead, BufReader, Bytes, Error, Read, Seek, SeekFrom, Write};
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write, Bytes};
 
 use clap::{App, Arg};
 use std::fs::File;
 use std::time::Duration;
 
-use hyper::body::{Buf, HttpBody};
+use hyper::body::HttpBody;
 use hyper::client::HttpConnector;
 use hyper::Body;
 use hyper_tls::HttpsConnector;
-use std::alloc::handle_alloc_error;
 use tokio::io::AsyncWriteExt as _;
 use tokio::signal;
 
@@ -96,16 +94,8 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
     // Stream the body, writing each chunk to stdout as we get it
     // (instead of buffering and printing at the end).
     println!("Body:\n");
-    // println!("Is End of Stream1 {}",res.is_end_stream());
-    // while let Some(next) = res.body_mut().data().await { // data: Result<Bytes,Error>
-    //     println!("Is End of Stream2 {}",res.is_end_stream());
-    //     let mut chunk = match next {
-    //         Ok(b) => b,
-    //         Err(e) => return Err(Box::new(e)),
-    //     };
-    //     tokio::io::stdout().write_all(&chunk).await?;
-    // }
-    let mut http_body: &mut Body = res.body_mut();
+
+    let http_body: &mut Body = res.body_mut();
     loop {
         if http_body.is_end_stream() {
             println!("Ende Http");
@@ -113,6 +103,7 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
             continue;
         }
         let data = http_body.data().await;
+        //http_body.poll_data()
 
         match data {
             Some(b) => match b {
@@ -122,12 +113,31 @@ async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
             None => tokio::time::delay_for(Duration::from_secs(3)).await,
         }
     }
+    // while let Some(result) = http_body.by.await {
+    //     match result {
+    //         Ok(chunk) => {
+    //             for b in chunk.iter() {
+    //                 if
+    //             }
+    //         },
+    //         Err(e) => return Err(Box::new(e)),
+    //     }
+    //     //tokio::io::stdout().write_all(&chunk?).await?;
+    // }
+   //  Body::channel();
+   // let buf= hyper::body::to_bytes(res).await?;
+
 
     println!("\n\nDone!");
     Ok(())
 }
 
-fn follow(filename: &str, num: usize) -> io::Result<()> {
+struct MyBody;
+impl  MyBody {
+
+}
+
+fn follow(filename: &str, _num: usize) -> io::Result<()> {
     //println!("{}", num);
     let stdout = io::stdout();
     let stdout_lock = stdout.lock();
@@ -152,7 +162,7 @@ fn follow(filename: &str, num: usize) -> io::Result<()> {
         writer.flush()?;
         last_seek_pos = cur_seek_pos;
     }
-    Ok(())
+    //Ok(())
 }
 
 fn main() {
@@ -208,7 +218,7 @@ fn main() {
         match read_page(url) {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
-            _ => {}
+            //_ => {}
         };
     } else {
         println!("no match!");
