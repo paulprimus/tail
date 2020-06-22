@@ -1,21 +1,24 @@
 extern crate clap;
 
 use std::collections::VecDeque;
+use std::error::Error;
 use std::io;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write, Bytes};
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, StdoutLock, Write};
 
-use clap::{App, Arg};
+use std::fmt;
 use std::fs::File;
 use std::time::Duration;
 
-use hyper::body::HttpBody;
+use clap::{App, Arg};
 use hyper::client::HttpConnector;
-use hyper::Body;
 use hyper_tls::HttpsConnector;
-use tokio::io::AsyncWriteExt as _;
+use tokio::io::{self as tio, AsyncBufReadExt};
 use tokio::signal;
+use tokio::time::{self};
 
-//type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+const NEW_LINE: u8 = b'\n';
+const SAVE_CURSOR_POSITION: [u8; 3] = [27, 91, 115];
+const RESTORE_CURSOR_POSITION: [u8; 3] = [27, 91, 117];
 
 #[derive(Debug)]
 struct LinesWithEnding<B> {
@@ -40,8 +43,7 @@ fn lines_with_ending<B: BufRead>(reader: B) -> LinesWithEnding<B> {
 
 fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
     println!("tail!!!");
-    let stdout = io::stdout();
-    let stdout_lock = stdout.lock();
+    let stdout_lock = io::stdout();
     //let mut reader = BufReader::new(input);
     let mut writer = io::BufWriter::new(stdout_lock);
     let lines = lines_with_ending(io::BufReader::new(input)).skip(num);
@@ -65,76 +67,130 @@ fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
 }
 
 #[tokio::main]
-async fn read_page(url: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn read_page(url: &str, mut stdout: StdoutLock) -> Result<(), Box<dyn Error>> {
     println!("read page");
     println!("{}", url);
     let uri = url.parse::<hyper::Uri>()?;
-    // if uri.scheme_str() != Some("https") {
-    //     println!("This example only works with 'https' URLs.");
-    //     return Ok(());
-    // }
-    //fetch_url(uri).await;
+
+    let mut data: VecDeque<Vec<u8>> = VecDeque::new();
     tokio::select! {
-    _ = fetch_url(uri) => println!("url fetched!"),
-    _ = signal::ctrl_c() => println!("Abbruch")
+      Ok(Some(result)) = fetch_url(uri) => data = result,
+    _ = signal::ctrl_c() => println!("Abbruch!"),
+    _ = time::delay_for(Duration::from_secs(5)) => println!("Timeout while fetching!"),
+    };
+
+    // let stdout_unlocked = io::stdout();
+    // let mut stdout = stdout_unlocked.lock();
+    // let mut stdout = tio::stdout();
+    stdout.write(&SAVE_CURSOR_POSITION)?;
+    //println!("{}","b\x1b[s");
+    //stdout.write(b"\x1b[s")?;
+    loop {
+        let userinput = match read_user_input().await {
+            Ok(v) => match v {
+                Some(d) => d,
+                None => {
+                    println!("break");
+                    break;
+                }
+            },
+            Err(e) => {
+                println!("{:?}", e);
+                break;
+            }
+        };
+        if std::str::from_utf8(&userinput[..])?.trim() == "quit" {
+            break;
+        }
+        //println!("{}", "b\x1b[u");
+        for d in &data {
+            stdout.write(&d[..])?;
+        }
+        stdout.write(&userinput[..])?;
+        stdout.write(&RESTORE_CURSOR_POSITION)?;
+        //stdout.write(b"\x1b[u")?;
+        //_= write_std_out(data) => println!("AAA")
     }
     Ok(())
 }
 
-async fn fetch_url(url: hyper::Uri) -> Result<(), Box<dyn std::error::Error>> {
+#[derive(Debug)]
+struct MyError {
+    details: String,
+}
+
+impl MyError {
+    fn new(msg: &str) -> MyError {
+        MyError {
+            details: msg.to_string(),
+        }
+    }
+}
+
+//impl Error for MyError {}
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error: {:?}", self)
+    }
+}
+
+async fn read_user_input() -> Result<Option<Vec<u8>>, MyError> {
+    let stdin = tio::stdin();
+    let mut reader = tokio::io::BufReader::new(stdin);
+    let mut buffer: Vec<u8> = Vec::new();
+    tokio::select! {
+        _ = reader.read_until(b'\n', &mut buffer) => println!("finished reading stdin"),
+        _ = time::delay_for(Duration::from_secs(10)) =>  return Ok(None)
+    };
+    // match reader.read_until(b'\n', &mut buffer).await {
+    //     Ok(_v) => (),
+    //     Err(_e) => return Err(MyError::new("Fehler"))
+    // }
+    return Ok(Some(buffer));
+}
+
+// fn read_user_input() -> Result<Option<Vec<u8>>, MyError> {
+//     let stdin = io::stdin();
+//     let stdin_lock = stdin.lock();
+//     let mut buffer: String = String::new();
+//     let mut reader = std::io::BufReader::new(stdin_lock);
+//
+//     match reader.read_line( &mut buffer) {
+//         Ok(v) => println!("done reading {}", v),
+//         Err(_e) => return Err(MyError::new("Fehler"))
+//     }
+//     return Ok(Some(buffer.into_bytes()));
+// }
+
+async fn fetch_url(
+    url: hyper::Uri,
+) -> Result<Option<VecDeque<Vec<u8>>>, Box<dyn std::error::Error>> {
     println!("fetch_url");
     let https: HttpsConnector<HttpConnector> = HttpsConnector::new();
     let client = hyper::Client::builder().build::<_, hyper::Body>(https);
 
-    let mut res = client.get(url).await?;
+    let res = client.get(url).await?;
 
     println!("Status: {}", res.status());
     println!("Headers: {:#?}\n", res.headers());
 
-    // Stream the body, writing each chunk to stdout as we get it
-    // (instead of buffering and printing at the end).
-    println!("Body:\n");
-
-    let http_body: &mut Body = res.body_mut();
-    loop {
-        if http_body.is_end_stream() {
-            println!("Ende Http");
-            tokio::time::delay_for(Duration::from_secs(3)).await;
-            continue;
-        }
-        let data = http_body.data().await;
-        //http_body.poll_data()
-
-        match data {
-            Some(b) => match b {
-                Ok(v) => tokio::io::stdout().write_all(&v).await?,
-                Err(e) => return Err(Box::new(e)),
-            },
-            None => tokio::time::delay_for(Duration::from_secs(3)).await,
+    let buf = hyper::body::to_bytes(res).await?;
+    let mut zeile: Vec<u8> = Vec::new();
+    let mut all: VecDeque<Vec<u8>> = VecDeque::with_capacity(11);
+    const MAX_SIZE: usize = 10;
+    for b in buf {
+        zeile.push(b);
+        if b == NEW_LINE {
+            all.push_back(zeile);
+            if all.len() > MAX_SIZE {
+                all.pop_front();
+            }
+            zeile = Vec::new();
         }
     }
-    // while let Some(result) = http_body.by.await {
-    //     match result {
-    //         Ok(chunk) => {
-    //             for b in chunk.iter() {
-    //                 if
-    //             }
-    //         },
-    //         Err(e) => return Err(Box::new(e)),
-    //     }
-    //     //tokio::io::stdout().write_all(&chunk?).await?;
-    // }
-   //  Body::channel();
-   // let buf= hyper::body::to_bytes(res).await?;
-
-
     println!("\n\nDone!");
-    Ok(())
-}
-
-struct MyBody;
-impl  MyBody {
-
+    Ok(Some(all))
 }
 
 fn follow(filename: &str, _num: usize) -> io::Result<()> {
@@ -162,7 +218,6 @@ fn follow(filename: &str, _num: usize) -> io::Result<()> {
         writer.flush()?;
         last_seek_pos = cur_seek_pos;
     }
-    //Ok(())
 }
 
 fn main() {
@@ -215,7 +270,8 @@ fn main() {
             Err(e) => println!("{}", e),
         }
     } else if let Some(url) = matches.value_of("http") {
-        match read_page(url) {
+        let stdout = std::io::stdout();
+        match read_page(url, stdout.lock()) {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
             //_ => {}
