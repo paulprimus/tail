@@ -12,7 +12,7 @@ use std::time::Duration;
 use clap::{App, Arg};
 use hyper::client::HttpConnector;
 use hyper_tls::HttpsConnector;
-use tokio::io::{self as tio, AsyncBufReadExt};
+use tokio::io::{self as tio, AsyncBufReadExt, AsyncWriteExt};
 use tokio::signal;
 use tokio::time::{self};
 
@@ -67,7 +67,7 @@ fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
 }
 
 #[tokio::main]
-async fn read_page(url: &str, mut stdout: StdoutLock) -> Result<(), Box<dyn Error>> {
+async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     println!("read page");
     println!("{}", url);
     let uri = url.parse::<hyper::Uri>()?;
@@ -81,8 +81,8 @@ async fn read_page(url: &str, mut stdout: StdoutLock) -> Result<(), Box<dyn Erro
 
     // let stdout_unlocked = io::stdout();
     // let mut stdout = stdout_unlocked.lock();
-    // let mut stdout = tio::stdout();
-    stdout.write(&SAVE_CURSOR_POSITION)?;
+    let mut stdout = tio::stdout();
+    stdout.write(&SAVE_CURSOR_POSITION).await?;
     //println!("{}","b\x1b[s");
     //stdout.write(b"\x1b[s")?;
     loop {
@@ -104,12 +104,11 @@ async fn read_page(url: &str, mut stdout: StdoutLock) -> Result<(), Box<dyn Erro
         }
         //println!("{}", "b\x1b[u");
         for d in &data {
-            stdout.write(&d[..])?;
+            stdout.write(&d[..]).await?;
         }
-        stdout.write(&userinput[..])?;
-        stdout.write(&RESTORE_CURSOR_POSITION)?;
+        stdout.write(&userinput[..]).await?;
+        stdout.write(&RESTORE_CURSOR_POSITION).await?;
         //stdout.write(b"\x1b[u")?;
-        //_= write_std_out(data) => println!("AAA")
     }
     Ok(())
 }
@@ -270,8 +269,7 @@ fn main() {
             Err(e) => println!("{}", e),
         }
     } else if let Some(url) = matches.value_of("http") {
-        let stdout = std::io::stdout();
-        match read_page(url, stdout.lock()) {
+        match read_page(url) {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
             //_ => {}
