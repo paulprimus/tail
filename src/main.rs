@@ -3,7 +3,7 @@ extern crate clap;
 use std::collections::VecDeque;
 use std::error::Error;
 use std::io;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, StdoutLock, Write};
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 
 use std::fmt;
 use std::fs::File;
@@ -78,37 +78,22 @@ async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     _ = signal::ctrl_c() => println!("Abbruch!"),
     _ = time::delay_for(Duration::from_secs(5)) => println!("Timeout while fetching!"),
     };
-
-    // let stdout_unlocked = io::stdout();
-    // let mut stdout = stdout_unlocked.lock();
     let mut stdout = tio::stdout();
     stdout.write(&SAVE_CURSOR_POSITION).await?;
-    //println!("{}","b\x1b[s");
-    //stdout.write(b"\x1b[s")?;
+
+
+    let stdin = tio::stdin();
+    let mut reader = tokio::io::BufReader::new(stdin);
     loop {
-        let userinput = match read_user_input().await {
-            Ok(v) => match v {
-                Some(d) => d,
-                None => {
-                    println!("break");
-                    break;
-                }
-            },
-            Err(e) => {
-                println!("{:?}", e);
-                break;
-            }
-        };
-        if std::str::from_utf8(&userinput[..])?.trim() == "quit" {
+        let mut userinput: String = String::new();
+        reader.read_line(&mut userinput).await?;
+        if userinput.trim() == "quit" {
             break;
         }
-        //println!("{}", "b\x1b[u");
         for d in &data {
             stdout.write(&d[..]).await?;
         }
-        stdout.write(&userinput[..]).await?;
         stdout.write(&RESTORE_CURSOR_POSITION).await?;
-        //stdout.write(b"\x1b[u")?;
     }
     Ok(())
 }
@@ -118,15 +103,7 @@ struct MyError {
     details: String,
 }
 
-impl MyError {
-    fn new(msg: &str) -> MyError {
-        MyError {
-            details: msg.to_string(),
-        }
-    }
-}
-
-//impl Error for MyError {}
+impl Error for MyError {}
 
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -142,25 +119,8 @@ async fn read_user_input() -> Result<Option<Vec<u8>>, MyError> {
         _ = reader.read_until(b'\n', &mut buffer) => println!("finished reading stdin"),
         _ = time::delay_for(Duration::from_secs(10)) =>  return Ok(None)
     };
-    // match reader.read_until(b'\n', &mut buffer).await {
-    //     Ok(_v) => (),
-    //     Err(_e) => return Err(MyError::new("Fehler"))
-    // }
     return Ok(Some(buffer));
 }
-
-// fn read_user_input() -> Result<Option<Vec<u8>>, MyError> {
-//     let stdin = io::stdin();
-//     let stdin_lock = stdin.lock();
-//     let mut buffer: String = String::new();
-//     let mut reader = std::io::BufReader::new(stdin_lock);
-//
-//     match reader.read_line( &mut buffer) {
-//         Ok(v) => println!("done reading {}", v),
-//         Err(_e) => return Err(MyError::new("Fehler"))
-//     }
-//     return Ok(Some(buffer.into_bytes()));
-// }
 
 async fn fetch_url(
     url: hyper::Uri,
