@@ -1,24 +1,32 @@
+mod http_data;
+
 extern crate clap;
+extern crate crossterm;
 
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::error::Error;
-use std::io;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
-
 use std::fmt;
 use std::fs::File;
+use std::io;
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
 use std::time::Duration;
 
 use clap::{App, Arg};
-use hyper::client::HttpConnector;
+use crossterm::{
+    cursor,
+    event::{read, Event, KeyCode, KeyEvent},
+    style::Print,
+    style::{Color, ResetColor, SetForegroundColor},
+    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+    QueueableCommand,
+};
+use http_data::HttpData;
+use hyper::{body::HttpBody, client::HttpConnector};
 use hyper_tls::HttpsConnector;
-use tokio::io::{self as tio, AsyncBufReadExt, AsyncWriteExt};
 use tokio::signal;
 use tokio::time::{self};
 
 const NEW_LINE: u8 = b'\n';
-const SAVE_CURSOR_POSITION: [u8; 3] = [27, 91, 115];
-const RESTORE_CURSOR_POSITION: [u8; 3] = [27, 91, 117];
 
 #[derive(Debug)]
 struct LinesWithEnding<B> {
@@ -66,35 +74,46 @@ fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
     Ok(())
 }
 
-#[tokio::main]
 async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
-    println!("read page");
-    println!("{}", url);
     let uri = url.parse::<hyper::Uri>()?;
 
-    let mut data: VecDeque<Vec<u8>> = VecDeque::new();
+    let mut data = HttpData::new();
     tokio::select! {
       Ok(Some(result)) = fetch_url(uri) => data = result,
     _ = signal::ctrl_c() => println!("Abbruch!"),
     _ = time::delay_for(Duration::from_secs(5)) => println!("Timeout while fetching!"),
     };
-    let mut stdout = tio::stdout();
-    stdout.write(&SAVE_CURSOR_POSITION).await?;
+    write_output(data)?;
 
+    Ok(())
+}
 
-    let stdin = tio::stdin();
-    let mut reader = tokio::io::BufReader::new(stdin);
+fn write_output(http_data: HttpData) -> Result<(), Box<dyn Error>> {
+    let stdout_unlocked = io::stdout();
+    let mut stdout = stdout_unlocked.lock();
+    stdout.queue(EnterAlternateScreen)?;
+    stdout.queue(SetForegroundColor(Color::Magenta))?;
+    stdout.queue(Print("fetching: "))?;
+    stdout.queue(Print(http_data.url))?;
+    stdout.queue(ResetColor)?;
+    stdout.queue(cursor::MoveDown(1))?;
+    let term_size = terminal::size()?;
     loop {
-        let mut userinput: String = String::new();
-        reader.read_line(&mut userinput).await?;
+        for d in &http_data.body {
+            stdout.write(&d[..])?;
+        }
+        stdout.queue(cursor::SavePosition)?;
+        stdout.queue(cursor::MoveTo(0, term_size.1))?;
+        stdout.queue(Print("> ".to_string()))?;
+        stdout.flush()?;
+        let userinput = read_line()?;
         if userinput.trim() == "quit" {
             break;
         }
-        for d in &data {
-            stdout.write(&d[..]).await?;
-        }
-        stdout.write(&RESTORE_CURSOR_POSITION).await?;
+        //   stdout.execute(cursor::RestorePosition)?;
     }
+    stdout.queue(LeaveAlternateScreen)?;
+    stdout.flush()?;
     Ok(())
 }
 
@@ -111,45 +130,55 @@ impl fmt::Display for MyError {
     }
 }
 
-async fn read_user_input() -> Result<Option<Vec<u8>>, MyError> {
-    let stdin = tio::stdin();
-    let mut reader = tokio::io::BufReader::new(stdin);
-    let mut buffer: Vec<u8> = Vec::new();
-    tokio::select! {
-        _ = reader.read_until(b'\n', &mut buffer) => println!("finished reading stdin"),
-        _ = time::delay_for(Duration::from_secs(10)) =>  return Ok(None)
-    };
-    return Ok(Some(buffer));
+fn read_line() -> Result<String, Box<dyn Error>> {
+    let mut line = String::new();
+    while let Event::Key(KeyEvent { code, .. }) = read()? {
+        match code {
+            KeyCode::Enter => {
+                break;
+            }
+            KeyCode::Char(c) => {
+                line.push(c);
+            }
+            _ => {}
+        }
+    }
+
+    return Ok(line);
 }
 
-async fn fetch_url(
-    url: hyper::Uri,
-) -> Result<Option<VecDeque<Vec<u8>>>, Box<dyn std::error::Error>> {
-    println!("fetch_url");
+async fn fetch_url(url: hyper::Uri) -> Result<Option<HttpData>, Box<dyn std::error::Error>> {
     let https: HttpsConnector<HttpConnector> = HttpsConnector::new();
     let client = hyper::Client::builder().build::<_, hyper::Body>(https);
 
+    let mut http_data = HttpData::new();
+    http_data.url = url.to_string();
     let res = client.get(url).await?;
+    let status_code = res.status();
+    http_data.status = status_code.to_string();
 
-    println!("Status: {}", res.status());
-    println!("Headers: {:#?}\n", res.headers());
+    let possible_size = res.body().size_hint().lower();
+    let mut header_map = HashMap::<String, String>::new();
+    for h in res.headers() {
+        header_map.insert(String::from(h.0.as_str()), String::from(h.0.as_str()));
+    }
 
     let buf = hyper::body::to_bytes(res).await?;
     let mut zeile: Vec<u8> = Vec::new();
-    let mut all: VecDeque<Vec<u8>> = VecDeque::with_capacity(11);
-    const MAX_SIZE: usize = 10;
+    let mut all: Vec<Vec<u8>> = Vec::with_capacity(possible_size as usize);
+    // const MAX_SIZE: usize = 10;
     for b in buf {
         zeile.push(b);
         if b == NEW_LINE {
-            all.push_back(zeile);
-            if all.len() > MAX_SIZE {
-                all.pop_front();
-            }
+            all.push(zeile);
             zeile = Vec::new();
         }
     }
-    println!("\n\nDone!");
-    Ok(Some(all))
+
+    //let header_map = res.headers().iter().map(|e| (e.0, e.1)).collect();
+
+    http_data.body = all;
+    Ok(Some(http_data))
 }
 
 fn follow(filename: &str, _num: usize) -> io::Result<()> {
@@ -179,7 +208,8 @@ fn follow(filename: &str, _num: usize) -> io::Result<()> {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let matches = App::new("tail - following logs made easy!")
         .version("0.0.1")
         .author("Paul Pacher")
@@ -229,7 +259,7 @@ fn main() {
             Err(e) => println!("{}", e),
         }
     } else if let Some(url) = matches.value_of("http") {
-        match read_page(url) {
+        match read_page(url).await {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
             //_ => {}

@@ -11,3 +11,4 @@ clap = "2.33"
 hyper = "0.13"
 hyper-tls = "0.4.1"
 tokio = { version = "0.2", features = ["full"] }
+crossterm = {version = "0.17" }
