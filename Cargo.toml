@@ -12,3 +12,5 @@ hyper = "0.13"
 hyper-tls = "0.4.1"
 tokio = { version = "0.2", features = ["full"] }
 crossterm = {version = "0.17" }
+regex = "1"
+lazy_static = "1.4.0"
