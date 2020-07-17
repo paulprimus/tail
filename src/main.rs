@@ -2,7 +2,8 @@ mod http_data;
 
 extern crate clap;
 extern crate crossterm;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate regex;
 
 use std::collections::{HashMap, VecDeque};
@@ -14,16 +15,23 @@ use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, StdoutLock, Write};
 use std::time::Duration;
 
 use clap::{App, Arg};
-use crossterm::{cursor, event::{read, Event, KeyCode, KeyEvent}, style::Print, style::{Color, ResetColor, SetForegroundColor}, terminal::{self, EnterAlternateScreen, LeaveAlternateScreen}, QueueableCommand, ExecutableCommand};
+use crossterm::{
+    cursor,
+    event::{read, Event, KeyCode, KeyEvent},
+    style::Print,
+    style::{Color, ResetColor, SetForegroundColor},
+    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand, QueueableCommand,
+};
 use http_data::HttpData;
 use hyper::{body::HttpBody, client::HttpConnector};
 use hyper_tls::HttpsConnector;
 use tokio::signal;
 use tokio::time::{self};
 
-use regex::Regex;
-use std::ops::Add;
 use crossterm::terminal::ClearType;
+use regex::Regex;
+use std::ops::{Add, Deref};
 
 const NEW_LINE: u8 = b'\n';
 
@@ -84,14 +92,14 @@ async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     };
     let stdout_unlocked = io::stdout();
     let mut stdout = stdout_unlocked.lock();
-    enter_alternate_screen(&mut stdout, &data)?;
+    enter_alternate_screen(&mut stdout, data)?;
     loop {
-        let userinput = read_line(&mut stdout)?;
+        let userinput: String = read_line(&mut stdout)?;
         if userinput.trim() == "quit" {
             break;
         }
         let result = prepare_output(&mut data, userinput)?;
-        write_output(&mut stdout, result)?;
+         write_output(&mut stdout, result)?;
     }
     stdout.execute(LeaveAlternateScreen)?;
     Ok(())
@@ -99,29 +107,41 @@ async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
 
 fn enter_alternate_screen(
     stdout: &mut StdoutLock,
-    http_data: &HttpData,
+    http_data: HttpData,
 ) -> Result<(), Box<dyn Error>> {
     stdout.queue(EnterAlternateScreen)?;
     stdout.queue(SetForegroundColor(Color::Magenta))?;
     stdout.queue(Print("url: "))?;
-    stdout.queue(Print(&http_data.url))?;
+    stdout.queue(Print(http_data.url))?;
     stdout.queue(Print("\n"))?;
     stdout.queue(ResetColor)?;
     stdout.queue(cursor::MoveDown(1))?;
     stdout.queue(cursor::SavePosition)?;
-    for d in &http_data.body {
-        stdout.write(&d[..])?;
+    let mut data = http_data.body;
+    data.truncate(10);
+    for d in data {
+        //   stdout.write(&d[..])?;
+        stdout.queue(Print(String::from_utf8(d.to_vec())?))?;
     }
+    // stdout.queue((Print(String::from_utf8(data.len())))?;
+    //  let l = data.len();
+    //  stdout.queue()
+
     let term_size = terminal::size()?;
     stdout.queue(cursor::MoveTo(0, term_size.1))?;
     stdout.queue(SetForegroundColor(Color::Green))?;
+
+    stdout.queue(Print("\n"))?;
+    let length = data.len();
+    stdout.queue(Print(length))?;
+    stdout.queue(Print("\n"))?;
     stdout.queue(Print("> ".to_string()))?;
     stdout.queue(ResetColor)?;
     stdout.flush()?;
     Ok(())
 }
 
-fn write_output(stdout: &mut StdoutLock, data : Vec<Vec<u8>>) -> Result<(), Box<dyn Error>> {
+fn write_output(stdout: &mut StdoutLock, data: Vec<Vec<u8>>) -> Result<(), Box<dyn Error>> {
     let term_size = terminal::size()?;
     stdout.queue(Print("\n\n"))?;
     for d in data {
@@ -136,18 +156,19 @@ fn write_output(stdout: &mut StdoutLock, data : Vec<Vec<u8>>) -> Result<(), Box<
     Ok(())
 }
 
-fn prepare_output(http_data: &mut HttpData, userinput: String) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
+fn prepare_output(
+    http_data: &mut HttpData,
+    userinput: String,
+) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
     let body = &http_data.body;
 
     let mut buffer = Vec::<Vec<u8>>::new();
     for line in body {
-
         let sdf = std::str::from_utf8(&line.as_slice())?;
         if sdf.contains(userinput.as_str()) {
             buffer.push(line.to_vec());
         }
     }
-
     Ok(buffer)
 }
 
@@ -170,12 +191,12 @@ fn read_line(stdout: &mut StdoutLock) -> Result<String, Box<dyn Error>> {
         match code {
             KeyCode::Enter => {
                 break;
-            },
+            }
             KeyCode::Char(c) => {
                 stdout.execute(Print(c))?;
                 line.push(c);
-               // stdout.execute(Print(&line))?;
-            },
+                // stdout.execute(Print(&line))?;
+            }
             KeyCode::Backspace => {
                 let length = line.len();
                 if length > 0 {
@@ -311,14 +332,4 @@ async fn main() {
     } else {
         println!("no match!");
     }
-
-    // let stdout = io::stdout();
-    // let mut stdout_lock = stdout.lock();
-    // let stdin = io::stdin();
-    // let mut stdin_lock = stdin.lock();
-    // let x: Vec<String> = std::env::args().skip(1).collect();
-    // for s in x {
-    //     println!("{}", s);
-    // }
-    // tail(&mut stdin_lock, &mut stdout_lock, 10);
 }
