@@ -26,12 +26,11 @@ use crossterm::{
 use http_data::HttpData;
 use hyper::{body::HttpBody, client::HttpConnector};
 use hyper_tls::HttpsConnector;
-use tokio::signal;
+use tokio::{signal, task};
 use tokio::time::{self};
 
 use crossterm::terminal::ClearType;
 use regex::Regex;
-use std::ops::{Add, Deref};
 
 const NEW_LINE: u8 = b'\n';
 
@@ -92,14 +91,18 @@ async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     };
     let stdout_unlocked = io::stdout();
     let mut stdout = stdout_unlocked.lock();
-    enter_alternate_screen(&mut stdout, data)?;
+    enter_alternate_screen(&mut stdout, &mut data)?;
     loop {
-        let userinput: String = read_line(&mut stdout)?;
+        // let join = task::spawn(async { read_line(&mut stdout) });
+        // let userinput = join.await?;
+        let userinput = read_line(&mut stdout)?;
         if userinput.trim() == "quit" {
             break;
         }
-        let result = prepare_output(&mut data, userinput)?;
-         write_output(&mut stdout, result)?;
+        if userinput.len() > 0 {
+            let result = prepare_output(&mut data, userinput)?;
+            write_output(&mut stdout, result)?;
+        }
     }
     stdout.execute(LeaveAlternateScreen)?;
     Ok(())
@@ -107,25 +110,21 @@ async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
 
 fn enter_alternate_screen(
     stdout: &mut StdoutLock,
-    http_data: HttpData,
+    http_data: &mut HttpData,
 ) -> Result<(), Box<dyn Error>> {
     stdout.queue(EnterAlternateScreen)?;
     stdout.queue(SetForegroundColor(Color::Magenta))?;
     stdout.queue(Print("url: "))?;
-    stdout.queue(Print(http_data.url))?;
+    stdout.queue(Print(&http_data.url))?;
     stdout.queue(Print("\n"))?;
     stdout.queue(ResetColor)?;
     stdout.queue(cursor::MoveDown(1))?;
     stdout.queue(cursor::SavePosition)?;
-    let mut data = http_data.body;
-    data.truncate(10);
-    for d in data {
-        //   stdout.write(&d[..])?;
+    let data = &http_data.body;
+
+    for d in &data[..10] {
         stdout.queue(Print(String::from_utf8(d.to_vec())?))?;
     }
-    // stdout.queue((Print(String::from_utf8(data.len())))?;
-    //  let l = data.len();
-    //  stdout.queue()
 
     let term_size = terminal::size()?;
     stdout.queue(cursor::MoveTo(0, term_size.1))?;
@@ -185,7 +184,7 @@ impl fmt::Display for MyError {
     }
 }
 
-fn read_line(stdout: &mut StdoutLock) -> Result<String, Box<dyn Error>> {
+fn read_line(stdout: &mut StdoutLock<'_>) -> Result<String, Box<dyn Error>> {
     let mut line = String::new();
     while let Event::Key(KeyEvent { code, .. }) = read()? {
         match code {
