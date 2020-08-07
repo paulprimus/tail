@@ -121,9 +121,10 @@ fn enter_alternate_screen(
     stdout.queue(cursor::MoveDown(1))?;
     stdout.queue(cursor::SavePosition)?;
     let data = &http_data.body;
-
-    for d in &data[..10] {
-        stdout.queue(Print(String::from_utf8(d.to_vec())?))?;
+    if data.len() > 10 {
+        for d in &data[..10] {
+            stdout.queue(Print(String::from_utf8(d.to_vec())?))?;
+        }
     }
 
     let term_size = terminal::size()?;
