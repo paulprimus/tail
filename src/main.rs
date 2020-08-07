@@ -40,46 +40,7 @@ struct LinesWithEnding<B> {
 }
 
 
-impl<B: BufRead> Iterator for LinesWithEnding<B> {
-    type Item = std::io::Result<String>;
-    fn next(&mut self) -> Option<Self::Item> {
-        let mut buf = String::new();
-        match self.buf.read_line(&mut buf) {
-            Ok(0) => None,
-            Ok(_) => Some(Ok(buf)),
-            Err(e) => Some(Err(e)),
-        }
-    }
-}
 
-fn lines_with_ending<B: BufRead>(reader: B) -> LinesWithEnding<B> {
-    LinesWithEnding { buf: reader }
-}
-
-fn tail<R: Read>(input: R, num: usize) -> io::Result<()> {
-    println!("tail!!!");
-    let stdout_lock = io::stdout();
-    //let mut reader = BufReader::new(input);
-    let mut writer = io::BufWriter::new(stdout_lock);
-    let lines = lines_with_ending(io::BufReader::new(input)).skip(num);
-
-    let mut deque = VecDeque::new();
-    for line in lines {
-        match line {
-            Ok(l) => {
-                deque.push_back(l);
-                if deque.len() > num {
-                    deque.pop_front();
-                }
-            }
-            Err(err) => return Err(err),
-        }
-    }
-    for line in deque {
-        writer.write(line.as_bytes())?;
-    }
-    Ok(())
-}
 
 async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     let uri = url.parse::<hyper::Uri>()?;
@@ -171,19 +132,6 @@ fn prepare_output(
         }
     }
     Ok(buffer)
-}
-
-#[derive(Debug)]
-struct MyError {
-    details: String,
-}
-
-impl Error for MyError {}
-
-impl fmt::Display for MyError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "error: {:?}", self)
-    }
 }
 
 fn read_line(stdout: &mut StdoutLock<'_>) -> Result<String, Box<dyn Error>> {
@@ -280,24 +228,6 @@ async fn main() {
         .version("0.0.1")
         .author("Paul Pacher")
         .arg(
-            Arg::with_name("print")
-                .long("print")
-                .short("p")
-                .help("Datei anführen.")
-                .value_name("FILE")
-                .takes_value(true)
-                .required(false),
-        )
-        .arg(
-            Arg::with_name("follow")
-                .long("follow")
-                .short("f")
-                .value_name("FILE")
-                .help("Schreibt Änderungen in die Standardausgabe.")
-                .takes_value(true)
-                .required(false),
-        )
-        .arg(
             Arg::with_name("http")
                 .long("http")
                 .short("s")
@@ -307,24 +237,7 @@ async fn main() {
         )
         .get_matches();
 
-    if let Some(filename) = matches.value_of("print") {
-        let file = match File::open(filename) {
-            Ok(f) => f,
-            Err(e) => {
-                println!("Fehler: Datei konnte nicht geöffnet werden!\n {}", e);
-                return;
-            }
-        };
-        match tail(file, 10) {
-            Ok(()) => println!("Success"),
-            Err(e) => println!("{}", e),
-        }
-    } else if let Some(filename) = matches.value_of("follow") {
-        match follow(filename, 10) {
-            Ok(()) => println!("Success"),
-            Err(e) => println!("{}", e),
-        }
-    } else if let Some(url) = matches.value_of("http") {
+  if let Some(url) = matches.value_of("http") {
         match read_page(url).await {
             Ok(()) => println!("Success"),
             Err(e) => println!("{}", e),
