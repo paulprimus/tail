@@ -39,6 +39,7 @@ struct LinesWithEnding<B> {
     buf: B,
 }
 
+
 impl<B: BufRead> Iterator for LinesWithEnding<B> {
     type Item = std::io::Result<String>;
     fn next(&mut self) -> Option<Self::Item> {
