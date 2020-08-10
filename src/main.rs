@@ -1,20 +1,19 @@
+mod config;
 mod http_data;
 
 extern crate clap;
 extern crate crossterm;
-#[macro_use]
-extern crate lazy_static;
+//#[macro_use]
+//extern crate lazy_static;
 extern crate regex;
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 use std::error::Error;
-use std::fmt;
-use std::fs::File;
 use std::io;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, StdoutLock, Write};
+use std::io::{StdoutLock, Write};
 use std::time::Duration;
 
-use clap::{App, Arg};
+use clap::{App, AppSettings, Arg};
 use crossterm::{
     cursor,
     event::{read, Event, KeyCode, KeyEvent},
@@ -24,23 +23,16 @@ use crossterm::{
     ExecutableCommand, QueueableCommand,
 };
 use http_data::HttpData;
+
 use hyper::{body::HttpBody, client::HttpConnector};
 use hyper_tls::HttpsConnector;
-use tokio::{signal, task};
+use tokio::signal;
 use tokio::time::{self};
 
+use crate::config::print_config;
 use crossterm::terminal::ClearType;
-use regex::Regex;
 
 const NEW_LINE: u8 = b'\n';
-
-#[derive(Debug)]
-struct LinesWithEnding<B> {
-    buf: B,
-}
-
-
-
 
 async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     let uri = url.parse::<hyper::Uri>()?;
@@ -189,61 +181,42 @@ async fn fetch_url(url: hyper::Uri) -> Result<Option<HttpData>, Box<dyn std::err
         }
     }
 
-    //let header_map = res.headers().iter().map(|e| (e.0, e.1)).collect();
-
     http_data.body = all;
     Ok(Some(http_data))
-}
-
-fn follow(filename: &str, _num: usize) -> io::Result<()> {
-    //println!("{}", num);
-    let stdout = io::stdout();
-    let stdout_lock = stdout.lock();
-    let file = File::open(filename)?;
-    let mut writer = io::BufWriter::new(stdout_lock);
-    let mut buf: Vec<u8> = Vec::new();
-
-    let mut reader = BufReader::new(file);
-    let mut cur_seek_pos: u64 = reader.seek(SeekFrom::End(0))?;
-    let mut last_seek_pos: u64 = cur_seek_pos;
-    loop {
-        std::thread::sleep(Duration::from_secs(3));
-        cur_seek_pos = reader.seek(SeekFrom::End(0))?;
-        if cur_seek_pos > last_seek_pos {
-            reader.seek(SeekFrom::Start(last_seek_pos))?;
-        } else {
-            reader.seek(SeekFrom::Start(0))?;
-        }
-        buf.clear();
-        reader.read_to_end(&mut buf)?;
-        writer.write_all(&buf[..])?;
-        writer.flush()?;
-        last_seek_pos = cur_seek_pos;
-    }
 }
 
 #[tokio::main]
 async fn main() {
     let matches = App::new("tail - following logs made easy!")
-        .version("0.0.1")
+        .version("0.1.1")
         .author("Paul Pacher")
-        .arg(
-            Arg::with_name("http")
-                .long("http")
-                .short("s")
-                .value_name("URL")
-                .takes_value(true)
-                .required(false),
+        .setting(AppSettings::SubcommandRequiredElseHelp)
+        .subcommand(App::new("read").author("Paul Pacher"))
+        .subcommand(
+            App::new("config").arg(
+                Arg::with_name("list")
+                    .long("list")
+                    .short("l")
+                    .required(true),
+            ),
         )
         .get_matches();
 
-  if let Some(url) = matches.value_of("http") {
-        match read_page(url).await {
-            Ok(()) => println!("Success"),
-            Err(e) => println!("{}", e),
-            //_ => {}
-        };
-    } else {
-        println!("no match!");
-    }
+    match matches.subcommand() {
+        ("read", Some(read_matches)) => {
+            let url = read_matches.value_of("read").unwrap();
+            match read_page(url).await {
+                Ok(()) => println!("Success"),
+                Err(e) => println!("{}", e),
+            };
+        }
+        ("config", Some(config_matches)) => {
+            if config_matches.is_present("list") {
+                print_config();
+            } else {
+                println!("Kein gültiges Argument für config");
+            }
+        }
+        _ => unreachable!(),
+    };
 }

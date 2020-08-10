@@ -1,6 +1,6 @@
 [package]
 name = "tail"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["pacher <paul.pacher@oenb.at>"]
 edition = "2018"
 

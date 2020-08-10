@@ -23,7 +23,7 @@ impl HttpData {
 
 impl fmt::Display for HttpData {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "URL: {}", self.url)?;
+        write!(f, "URL: {}", self.url)?;
         if self.status != "".to_string() {
             writeln!(f, "Status: {}", self.status)?;
         }
@@ -36,4 +36,13 @@ impl fmt::Display for HttpData {
 #[cfg(test)]
 mod tests {
     use crate::http_data::HttpData;
+
+    #[test]
+    fn display() {
+        let mut http_data = HttpData::new();
+        http_data.url = "www.test.at".to_string();
+        assert_eq!(http_data.url, "www.test.at".to_string());
+        print!("{}", http_data);
+        assert_eq!(format!("{}", http_data), "URL: www.test.at");
+    }
 }
