@@ -1,11 +1,13 @@
 mod config;
+mod error;
 mod http_data;
+mod opl_typ;
 
 extern crate clap;
 extern crate crossterm;
 //#[macro_use]
 //extern crate lazy_static;
-extern crate regex;
+//extern crate regex;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -30,7 +32,9 @@ use tokio::signal;
 use tokio::time::{self};
 
 use crate::config::print_config;
+use crate::opl_typ::OplTyp;
 use crossterm::terminal::ClearType;
+use std::str::FromStr;
 
 const NEW_LINE: u8 = b'\n';
 
@@ -47,8 +51,6 @@ async fn read_page(url: &str) -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout_unlocked.lock();
     enter_alternate_screen(&mut stdout, &mut data)?;
     loop {
-        // let join = task::spawn(async { read_line(&mut stdout) });
-        // let userinput = join.await?;
         let userinput = read_line(&mut stdout)?;
         if userinput.trim() == "quit" {
             break;
@@ -191,32 +193,46 @@ async fn main() {
         .version("0.1.1")
         .author("Paul Pacher")
         .setting(AppSettings::SubcommandRequiredElseHelp)
-        .subcommand(App::new("read").author("Paul Pacher"))
-        .subcommand(
-            App::new("config").arg(
-                Arg::with_name("list")
-                    .long("list")
-                    .short("l")
-                    .required(true),
-            ),
-        )
+        .subcommand(App::new("fomis").author("Paul Pacher")
+            .subcommand(App::new("serve")))
+        .subcommand(App::new("list").help_message("Auflistung aller Services"))
         .get_matches();
 
-    match matches.subcommand() {
-        ("read", Some(read_matches)) => {
-            let url = read_matches.value_of("read").unwrap();
-            match read_page(url).await {
-                Ok(()) => println!("Success"),
-                Err(e) => println!("{}", e),
-            };
+    match matches.subcommand_name() {
+        Some("list") => {
+            print!("- {}", OplTyp::DQM);
+            print!("- {}", OplTyp::FOMIS);
         }
-        ("config", Some(config_matches)) => {
-            if config_matches.is_present("list") {
-                print_config();
-            } else {
-                println!("Kein gültiges Argument für config");
-            }
+        Some("fomis") => {
+            print_config(OplTyp::FOMIS);
+            // println!("1: {}", typ);
+            // println!("Type: {}", OplTyp::FOMIS);
+            // let opl_typ = OplTyp::from_str("FOMIS").expect("asdfsadf");
+            // println!("{}", opl_typ);
+            // let opl_typ = match OplTyp::from_str(typ) {
+            //   Ok(v) => v,
+            //     Err(e) => {
+            //         println!("{:?}", e);
+            //         return  e;
+            //     }
+            // };
+            // match read_page().await {
+            //     Ok(()) => println!("Success"),
+            //     Err(e) => println!("{}", e),
+            // };
+
+
         }
         _ => unreachable!(),
     };
+   match  matches.subcommand() {
+        ("fomis", Some(fomis_matches)) => {
+            let x = fomis_matches.value_of("serve").unwrap();
+            println!("{}", x);
+        },
+       // Some(("dqm", fomis_matches)) => {
+       //
+       // },
+       _ => unreachable!()
+    }
 }

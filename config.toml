@@ -1,0 +1,8 @@
+
+
+[fomis]
+root={ test = "http://tcommon31host.w.oenb.co.at:10000/fomis/", prod = "http://pcommon31host.w.oenb.co.at:10000/fomis/" }
+
+
+[dqm]
+root={test = "http://tcommon31host.w.oenb.co.at:10000/dqm/", prod = "http://pcommon31host.w.oenb.co.at:10000/dqm/"}
