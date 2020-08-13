@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
-use crate::opl_typ::OplTyp;
 use crate::error::{OplError, OplErrorKind};
+use crate::opltyp::OplTyp;
 use std::fs::File;
 use std::io::Read;
 use toml;
@@ -17,31 +17,48 @@ struct Fomis {
     root: Root,
 }
 
+// impl Fomis {
+//     fn url(&self) -> (String,String) {
+//         (&self.root.test,&self.root.prod);
+//     }
+// }
+
 #[derive(Debug, Deserialize)]
 struct Dqm {
-    root: Root
+    root: Root,
 }
 
 #[derive(Debug, Deserialize)]
 struct Root {
     test: String,
-    prod: String
+    prod: String,
 }
 
-fn parse() -> Result<Config, OplError> {
+pub fn parse() -> Result<Config, OplError> {
     let mut inhalt_config = String::new();
-    File::open("config.toml")
-        .and_then(|mut f| f.read_to_string(&mut inhalt_config))?;
-    let config: Config = toml::from_str(&inhalt_config).map_err(|_| OplError::new(OplErrorKind::ParseError))?;
+    File::open("config.toml").and_then(|mut f| f.read_to_string(&mut inhalt_config))?;
+    let config: Config =
+        toml::from_str(&inhalt_config).map_err(|_| OplError::new(OplErrorKind::ParseError))?;
     Ok(config)
 }
 
-pub fn print_config(opl_typ: OplTyp) -> Result<(), OplError>{
-    let config = parse()?;
-    match opl_typ {
-        OplTyp::FOMIS => println!("{:?}", config.fomis.root),
-        OplTyp::DQM => println!("{:?}", config.dqm.root),
-        _ => print!("{:?}", config.dqm)
+impl Config {
+    pub fn get_url_for(self, opl_typ: OplTyp) -> Result<String, OplError> {
+        //let config = parse()?;
+        let url = match opl_typ {
+            OplTyp::FOMIS => self.fomis.root.test,
+            OplTyp::DQM => self.dqm.root.test,
+            _ => unreachable!(),
+        };
+        Ok(url)
     }
-    Ok(())
+    pub fn get_config_for(self, opl_typ: OplTyp) -> Result<String, OplError> {
+        //let config = parse()?;
+        let url = match opl_typ {
+            OplTyp::FOMIS => self.fomis.root.test,
+            OplTyp::DQM => self.dqm.root.test,
+            _ => unreachable!(),
+        };
+        Ok(url)
+    }
 }
