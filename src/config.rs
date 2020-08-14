@@ -1,9 +1,11 @@
 use serde::Deserialize;
 
 use crate::error::{OplError, OplErrorKind};
+use crate::http::HttpData;
 use crate::opltyp::OplTyp;
+use crate::term;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, StdoutLock};
 use toml;
 
 #[derive(Debug, Deserialize)]
@@ -43,11 +45,11 @@ pub fn parse() -> Result<Config, OplError> {
 }
 
 impl Config {
-    pub fn get_url_for(self, opl_typ: OplTyp) -> Result<String, OplError> {
+    pub fn get_url_for(&self, opl_typ: OplTyp) -> Result<String, OplError> {
         //let config = parse()?;
-        let url = match opl_typ {
-            OplTyp::FOMIS => self.fomis.root.test,
-            OplTyp::DQM => self.dqm.root.test,
+        let url: String = match opl_typ {
+            OplTyp::FOMIS => self.fomis.root.test.to_string(),
+            OplTyp::DQM => self.dqm.root.test.to_string(),
             _ => unreachable!(),
         };
         Ok(url)
@@ -60,5 +62,9 @@ impl Config {
             _ => unreachable!(),
         };
         Ok(url)
+    }
+
+    pub fn print_root(&self, stdout: &mut StdoutLock, data: &mut HttpData, opltyp: OplTyp) {
+        term::print_root(stdout, data, opltyp);
     }
 }

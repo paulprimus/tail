@@ -9,8 +9,30 @@ use crossterm::{
     ExecutableCommand, QueueableCommand,
 };
 
+use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
 use crate::http::{fetch_url, HttpData};
+use crate::opltyp::OplTyp;
+
+pub fn print_root(
+    stdout: &mut StdoutLock,
+    http_data: &mut HttpData,
+    oplTyp: OplTyp,
+) -> Result<(), OplError> {
+    println!("{}", SetForegroundColor(Color::Magenta));
+
+    //stdout.queue(SetForegroundColor(Color::Magenta))?;
+    println!("{}", Print("url: "));
+    println!("{}", Print(&http_data.url));
+    println!("{}", Print("\n"));
+
+    let data = &http_data.body;
+    for d in &data[..] {
+        println!("{}",String::from_utf8(d.to_vec()).map_err(|_| OplError::new(OplErrorKind::Utf8Error))?);
+    }
+    // stdout.flush();
+    Ok(())
+}
 
 pub fn enter_alternate_screen(
     stdout: &mut StdoutLock,
@@ -25,14 +47,13 @@ pub fn enter_alternate_screen(
     stdout.queue(cursor::MoveDown(1))?;
     stdout.queue(cursor::SavePosition)?;
     let data = &http_data.body;
-    if data.len() > 10 {
-        for d in &data[..10] {
-            stdout.queue(Print(
-                String::from_utf8(d.to_vec())
-                    .map_err(|_| OplError::new(OplErrorKind::Utf8Error))?,
-            ))?;
-        }
+    //if data.len() > 10 {
+    for d in &data[..] {
+        stdout.queue(Print(
+            String::from_utf8(d.to_vec()).map_err(|_| OplError::new(OplErrorKind::Utf8Error))?,
+        ))?;
     }
+    //}
 
     let term_size = terminal::size()?;
     stdout.queue(cursor::MoveTo(0, term_size.1))?;

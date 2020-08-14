@@ -44,7 +44,7 @@ impl fmt::Display for HttpData {
 }
 
 //pub async fn fetch_url(url: hyper::Uri) -> Result<Option<HttpData>, OplError> {
-pub async fn fetch_url(opltyp: OplTyp, config: Config) -> Result<Option<HttpData>, OplError> {
+pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpData>, OplError> {
     let url = config.get_url_for(opltyp)?;
     let hyper_uri = url.parse::<hyper::Uri>()?;
     let https: HttpsConnector<HttpConnector> = HttpsConnector::new();
