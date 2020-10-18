@@ -5,7 +5,7 @@ use crossterm::{
     event::{read, Event, KeyCode, KeyEvent},
     style::Print,
     style::{Color, ResetColor, SetForegroundColor},
-    terminal::{self, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{self, ClearType, EnterAlternateScreen, LeaveAlternateScreen, ScrollUp},
     ExecutableCommand, QueueableCommand,
 };
 
@@ -13,24 +13,29 @@ use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
 use crate::http::{fetch_url, HttpData};
 use crate::opltyp::OplTyp;
+use crate::parse::RootLogs;
 
 pub fn print_root(
     stdout: &mut StdoutLock,
-    http_data: &mut HttpData,
-    oplTyp: OplTyp,
+    data: RootLogs,
+    opl_typ: OplTyp,
 ) -> Result<(), OplError> {
-    println!("{}", SetForegroundColor(Color::Magenta));
+    ScrollUp(20);
+    // stdout.queue(SetForegroundColor(Color::Magenta))?;
 
     //stdout.queue(SetForegroundColor(Color::Magenta))?;
-    println!("{}", Print("url: "));
-    println!("{}", Print(&http_data.url));
-    println!("{}", Print("\n"));
+    //stdout.queue( Print("url: "))?;
+    // stdout.queue(Print(&h))
+    // println!("{}", Print(&http_data.url));
+    stdout.queue(Print("\n"))?;
 
-    let data = &http_data.body;
-    for d in &data[..] {
-        println!("{}",String::from_utf8(d.to_vec()).map_err(|_| OplError::new(OplErrorKind::Utf8Error))?);
-    }
-    // stdout.flush();
+    // let data = data;
+    // for d in &data[..] {
+    //     stdout.queue(Print(
+    //         String::from_utf8(d.to_vec()).map_err(|_| OplError::new(OplErrorKind::Utf8Error))?,
+    //     ))?;
+    // }
+    stdout.flush()?;
     Ok(())
 }
 

@@ -3,6 +3,7 @@ use serde::Deserialize;
 use crate::error::{OplError, OplErrorKind};
 use crate::http::HttpData;
 use crate::opltyp::OplTyp;
+use crate::parse;
 use crate::term;
 use std::fs::File;
 use std::io::{Read, StdoutLock};
@@ -62,9 +63,5 @@ impl Config {
             _ => unreachable!(),
         };
         Ok(url)
-    }
-
-    pub fn print_root(&self, stdout: &mut StdoutLock, data: &mut HttpData, opltyp: OplTyp) {
-        term::print_root(stdout, data, opltyp);
     }
 }

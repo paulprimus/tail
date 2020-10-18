@@ -2,6 +2,7 @@ mod config;
 mod error;
 mod http;
 mod opltyp;
+mod parse;
 mod term;
 
 extern crate clap;
@@ -31,6 +32,7 @@ use crate::error::OplError;
 use crate::http::{fetch_url, HttpData};
 use crate::opltyp::OplTyp;
 use crate::term::enter_alternate_screen;
+use std::io::StdoutLock;
 
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
@@ -42,7 +44,15 @@ async fn main() -> Result<(), OplError> {
             App::new("fomis")
                 .about("fomis app")
                 .setting(AppSettings::SubcommandRequiredElseHelp)
-                .subcommand(App::new("serve"))
+                .subcommand(
+                    App::new("serve").arg(
+                        Arg::with_name("day-offset")
+                            .short("d")
+                            .long("day-offset")
+                            .takes_value(true)
+                            .help("Listet Logdateien der letzten angeführten Tage"),
+                    ),
+                )
                 .subcommand(App::new("config")),
         )
         .subcommand(App::new("list").help_message("Auflistung aller Services"))
@@ -62,17 +72,32 @@ async fn main() -> Result<(), OplError> {
     let mut out_locked = out.lock();
 
     match matches.subcommand() {
-        ("fomis", Some(fomis_matches)) => match fomis_matches.subcommand_name() {
-            Some("serve") => {
+        ("fomis", Some(fomis_matches)) => match fomis_matches.subcommand() {
+            ("serve", Some(serve_matches)) => {
+                let day_offset = serve_matches.value_of("day-offset");
+
                 if let Some(mut data) = fetch_url(OplTyp::FOMIS, &config).await? {
-                    //enter_alternate_screen(&mut out_locked, &mut data)?;
-                    config.print_root(&mut out_locked, &mut data, OplTyp::FOMIS);
+                    print_root(&mut out_locked, &mut data, OplTyp::FOMIS, day_offset)?;
                 }
             }
-            Some("config") => println!("{}", config.get_config_for(OplTyp::FOMIS)?),
+            ("config", Some(_config_matches)) => {
+                println!("{}", config.get_config_for(OplTyp::FOMIS)?)
+            }
+            ("list", None) => {}
             _ => unreachable!(),
         },
         _ => unreachable!(),
     }
+    Ok(())
+}
+
+pub fn print_root(
+    stdout: &mut StdoutLock,
+    data: &mut HttpData,
+    opltyp: OplTyp,
+    day_offset: Option<&str>,
+) -> Result<(), OplError> {
+    let ergebnis = parse::parse_root(data)?;
+    term::print_root(stdout, ergebnis, opltyp)?;
     Ok(())
 }

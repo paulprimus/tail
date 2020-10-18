@@ -51,7 +51,7 @@ pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpDat
     let client = hyper::Client::builder().build::<_, hyper::Body>(https);
 
     let mut http_data = HttpData::new();
-    http_data.url = url.to_string();
+    http_data.url = url;
     let res = client.get(hyper_uri).await?;
     let status_code = res.status();
     http_data.status = status_code.to_string();
@@ -76,7 +76,6 @@ pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpDat
             zeile = Vec::new();
         }
     }
-
     http_data.body = all;
     Ok(Some(http_data))
 }
