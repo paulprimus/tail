@@ -10,7 +10,7 @@ use std::rc::Rc;
 pub struct RootLogs {
     url: String,
     title: String,
-    logs: Rc<HashMap<DateTime<Utc>, Vec<String>>>,
+    logs: HashMap<DateTime<Utc>, Vec<String>>,
 }
 
 impl RootLogs {
@@ -18,17 +18,18 @@ impl RootLogs {
         RootLogs {
             url: String::new(),
             title: String::new(),
-            logs: Rc::<HashMap<DateTime<Utc>, Vec<String>>>,
+            logs: HashMap::<DateTime<Utc>, Vec<String>>::new()
         }
     }
 
-    fn append_log(&self, date: DateTime<Utc>, log: String) -> Result<(), OplError>{
-        let logs:HashMap::<DateTime<Utc>, Rc<Vec<String>>> = self.logs;
-        let mut list = match logs.get(&date) {
-            Some(v) => v,
-            None => return Err(OplError::new(OplErrorKind::ParseError)),
+    fn append_log(&mut self, date: DateTime<Utc>, log: String) -> Result<(), OplError>{
+
+        let mut list:  Vec<String> = match self.logs.get(&date) {
+            Some(v) => v.to_vec(),
+            None => Vec::<String>::new(),
         };
         list.push(log);
+        self.logs.insert(date,list.to_vec());
         Ok(())
     }
 }
@@ -39,8 +40,6 @@ pub fn parse_root(data: &mut HttpData) -> Result<RootLogs, OplError> {
     let utc: DateTime<Utc> = Utc::now();
     //  println!("{}
     let mut root_logs = RootLogs::new();
-    let mut logs: HashMap<DateTime<Utc>, Vec<String>> =
-        HashMap::<DateTime<Utc>, Vec<String>>::new();
 
     let re_titel = Regex::new(re_pattern_titel).unwrap();
     let re_log = Regex::new(r#"(<img src="/icons/text.*)"#).unwrap();
@@ -89,6 +88,7 @@ pub fn parse_root(data: &mut HttpData) -> Result<RootLogs, OplError> {
             // lines.push(b" ".to_vec());
             // lines.push(timestamp.as_bytes().to_vec());
             // lines.push(b"\n".to_vec());
+            root_logs.append_log(&date,v.inner_html().into_bytes())
         }
     }
     Ok(root_logs)
