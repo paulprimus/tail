@@ -68,8 +68,8 @@ async fn main() -> Result<(), OplError> {
         _ => unreachable!(),
     };
 
-    let out = io::stdout();
-    let mut out_locked = out.lock();
+    let mut out_locked = tokio::io::stdout();
+    // let mut out_locked = out.lock();
 
     match matches.subcommand() {
         ("fomis", Some(fomis_matches)) => match fomis_matches.subcommand() {
@@ -92,7 +92,7 @@ async fn main() -> Result<(), OplError> {
 }
 
 pub fn print_root(
-    stdout: &mut StdoutLock,
+    stdout: &mut tokio::io::Stdout,
     data: &mut HttpData,
     opltyp: OplTyp,
     day_offset: Option<&str>,

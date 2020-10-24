@@ -4,13 +4,13 @@ use crate::opltyp::OplTyp;
 use chrono::prelude::*;
 use regex::Regex;
 use scraper::{Html, Selector};
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use std::rc::Rc;
 
 pub struct RootLogs {
-    url: String,
-    title: String,
-    logs: HashMap<DateTime<Utc>, Vec<String>>,
+    pub url: String,
+    pub title: String,
+    pub logs: BTreeMap<Date<Utc>, Vec<String>>,
 }
 
 impl RootLogs {
@@ -18,30 +18,29 @@ impl RootLogs {
         RootLogs {
             url: String::new(),
             title: String::new(),
-            logs: HashMap::<DateTime<Utc>, Vec<String>>::new()
+            logs: BTreeMap::<Date<Utc>, Vec<String>>::new(),
         }
     }
 
-    fn append_log(&mut self, date: DateTime<Utc>, log: String) -> Result<(), OplError>{
-
-        let mut list:  Vec<String> = match self.logs.get(&date) {
+    fn append_log(&mut self, date: Date<Utc>, log: String) -> Result<(), OplError> {
+        let mut list: Vec<String> = match self.logs.get(&date) {
             Some(v) => v.to_vec(),
             None => Vec::<String>::new(),
         };
         list.push(log);
-        self.logs.insert(date,list.to_vec());
+        self.logs.insert(date, list.to_vec());
         Ok(())
     }
 }
 
-const re_pattern_titel: &'static str = r"<titel>.*</titel>";
+const RE_PATTERN_TITEL: &'static str = r"<titel>.*</titel>";
 
 pub fn parse_root(data: &mut HttpData) -> Result<RootLogs, OplError> {
     let utc: DateTime<Utc> = Utc::now();
     //  println!("{}
     let mut root_logs = RootLogs::new();
 
-    let re_titel = Regex::new(re_pattern_titel).unwrap();
+    let re_titel = Regex::new(RE_PATTERN_TITEL).unwrap();
     let re_log = Regex::new(r#"(<img src="/icons/text.*)"#).unwrap();
     let re_timestamp = Regex::new(r"(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}").unwrap();
     let title_selector = Selector::parse("title").unwrap();
@@ -83,12 +82,7 @@ pub fn parse_root(data: &mut HttpData) -> Result<RootLogs, OplError> {
                 None => return Err(OplError::new(OplErrorKind::ParseError)),
             };
             let date = Utc.ymd(year, monat, day);
-            // root_logs.
-            // lines.push(v.inner_html().into_bytes());
-            // lines.push(b" ".to_vec());
-            // lines.push(timestamp.as_bytes().to_vec());
-            // lines.push(b"\n".to_vec());
-            root_logs.append_log(&date,v.inner_html().into_bytes())
+            root_logs.append_log(date, v.inner_html())?;
         }
     }
     Ok(root_logs)
