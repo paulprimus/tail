@@ -1,129 +1,55 @@
-use std::io::{StdoutLock, Write};
-
-use crossterm::{
-    cursor,
-    event::{read, Event, KeyCode, KeyEvent},
-    style::Print,
-    style::{Color, ResetColor, SetForegroundColor},
-    terminal::{self, ClearType, EnterAlternateScreen, LeaveAlternateScreen, ScrollUp},
-    ExecutableCommand, QueueableCommand,
-};
-
-use crate::config::Config;
-use crate::error::{OplError, OplErrorKind};
-use crate::http::{fetch_url, HttpData};
+use crate::error::OplError;
 use crate::opltyp::OplTyp;
 use crate::parse::RootLogs;
+use chrono::prelude::*;
+use chrono::Duration;
+use tokio::io::{AsyncWriteExt, BufWriter, Stdout};
 
-pub fn print_root(stdout: &mut tokio::io::Stdout,  data: RootLogs, opl_typ: OplTyp) -> Result<(), OplError> {
-    //ScrollUp(20);
-    // stdout.queue(SetForegroundColor(Color::Magenta))?;
-
-    //stdout.queue(SetForegroundColor(Color::Magenta))?;
-    //stdout.queue( Print("url: "))?;
-    // stdout.queue(Print(&h))
-    // println!("{}", Print(&http_data.url));
-    //stdout.queue(Print("\n"))?;
-
-    for (k, v) in data.logs {
-        println!("{:?}-{:?}", k,v);
-    }
-    // for d in &data[..] {
-    //     stdout.queue(Print(
-    //         String::from_utf8(d.to_vec()).map_err(|_| OplError::new(OplErrorKind::Utf8Error))?,
-    //     ))?;
-    // }
-   // stdout.flush()?;
-    Ok(())
-}
-
-pub fn enter_alternate_screen(
-    stdout: &mut StdoutLock,
-    http_data: &mut HttpData,
+pub async fn print_root(
+    stdout: &mut tokio::io::Stdout,
+    data: RootLogs,
+    offset: u32,
 ) -> Result<(), OplError> {
-    stdout.queue(EnterAlternateScreen)?;
-    stdout.queue(SetForegroundColor(Color::Magenta))?;
-    stdout.queue(Print("url: "))?;
-    stdout.queue(Print(&http_data.url))?;
-    stdout.queue(Print("\n"))?;
-    stdout.queue(ResetColor)?;
-    stdout.queue(cursor::MoveDown(1))?;
-    stdout.queue(cursor::SavePosition)?;
-    let data = &http_data.body;
-    //if data.len() > 10 {
-    for d in &data[..] {
-        stdout.queue(Print(
-            String::from_utf8(d.to_vec()).map_err(|_| OplError::new(OplErrorKind::Utf8Error))?,
-        ))?;
+    let mut writer = BufWriter::new(stdout);
+    if offset == 0 {
+        for (k, v) in data.logs {
+            print_entry(&mut writer, k, &v).await?;
+            writer.flush();
+        }
+    } else {
+        let today = Utc::today();
+        print_btree(data, offset, &mut writer, today).await?;
     }
-    //}
-
-    let term_size = terminal::size()?;
-    stdout.queue(cursor::MoveTo(0, term_size.1))?;
-    stdout.queue(SetForegroundColor(Color::Green))?;
-
-    stdout.queue(Print("\n"))?;
-    let length = data.len();
-    stdout.queue(Print(length))?;
-    stdout.queue(Print("\n"))?;
-    stdout.queue(Print("> ".to_string()))?;
-    stdout.queue(ResetColor)?;
-    stdout.flush()?;
     Ok(())
 }
 
-// fn write_output(stdout: &mut StdoutLock, data: Vec<Vec<u8>>) -> Result<(), OplError> {
-//     let term_size = terminal::size()?;
-//     stdout.queue(Print("\n\n"))?;
-//     for d in data {
-//         stdout.write(&d[..])?;
-//     }
-//     // stdout.queue(cursor::SavePosition)?;
-//     stdout.queue(cursor::MoveTo(0, term_size.1))?;
-//     stdout.queue(SetForegroundColor(Color::Green))?;
-//     stdout.queue(Print("> ".to_string()))?;
-//     stdout.queue(ResetColor)?;
-//     stdout.flush()?;
-//     Ok(())
-// }
-
-fn prepare_output(http_data: &mut HttpData, userinput: String) -> Result<Vec<Vec<u8>>, OplError> {
-    let body = &http_data.body;
-
-    let mut buffer = Vec::<Vec<u8>>::new();
-    for line in body {
-        let sdf = std::str::from_utf8(&line.as_slice())
-            .map_err(|_| OplError::new(OplErrorKind::Utf8Error))?;
-        if sdf.contains(userinput.as_str()) {
-            buffer.push(line.to_vec());
+async fn print_btree(
+    data: RootLogs,
+    offset: u32,
+    writer: &mut BufWriter<&mut Stdout>,
+    today: Date<Utc>,
+) -> Result<(), OplError> {
+    for i in 1..offset {
+        let date = today - Duration::days(i as i64);
+        if let Some(v) = data.logs.get(&date) {
+            print_entry(writer, date, v).await?;
         }
     }
-    Ok(buffer)
+    writer.flush().await?;
+    Ok(())
 }
 
-// fn read_line(stdout: &mut StdoutLock<'_>) -> Result<String, OplError> {
-//     let mut line = String::new();
-//     while let Event::Key(KeyEvent { code, .. }) = read()? {
-//         match code {
-//             KeyCode::Enter => {
-//                 break;
-//             }
-//             KeyCode::Char(c) => {
-//                 stdout.execute(Print(c))?;
-//                 line.push(c);
-//                 // stdout.execute(Print(&line))?;
-//             }
-//             KeyCode::Backspace => {
-//                 let length = line.len();
-//                 if length > 0 {
-//                     line.truncate(length - 1);
-//                     stdout.execute(cursor::MoveLeft(1))?;
-//                     stdout.execute(terminal::Clear(ClearType::UntilNewLine))?;
-//                 }
-//             }
-//             _ => {}
-//         }
-//     }
-//
-//     return Ok(line);
-// }
+async fn print_entry(
+    writer: &mut BufWriter<&mut Stdout>,
+    date: Date<Utc>,
+    v: &[String],
+) -> Result<(), OplError> {
+    writer.write(date.to_string().as_bytes()).await?;
+    writer.write(b": ").await?;
+    for s in v {
+        writer.write(s.as_bytes()).await?;
+        writer.write(b", ").await?;
+    }
+    writer.write(b"\n").await?;
+    Ok(())
+}

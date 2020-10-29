@@ -30,10 +30,16 @@ impl HttpData {
     }
 }
 
+impl Default for HttpData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl fmt::Display for HttpData {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "URL: {}", self.url)?;
-        if self.status != "".to_string() {
+        if self.status != "" {
             writeln!(f, "Status: {}", self.status)?;
         }
         for h in &self.header {
@@ -65,7 +71,7 @@ pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpDat
 
     let buf = hyper::body::to_bytes(res)
         .await
-        .map_err(|_| OplError::new(OplErrorKind::FileNotFound))?;
+        .map_err(|e| OplError::new(OplErrorKind::FileNotFound(e.to_string())))?;
     let mut zeile: Vec<u8> = Vec::new();
     let mut all: Vec<Vec<u8>> = Vec::with_capacity(possible_size as usize);
     // const MAX_SIZE: usize = 10;

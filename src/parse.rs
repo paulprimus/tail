@@ -1,11 +1,9 @@
 use crate::error::{OplError, OplErrorKind};
 use crate::http::HttpData;
-use crate::opltyp::OplTyp;
 use chrono::prelude::*;
 use regex::Regex;
 use scraper::{Html, Selector};
-use std::collections::{HashMap, BTreeMap};
-use std::rc::Rc;
+use std::collections::{BTreeMap};
 
 pub struct RootLogs {
     pub url: String,
@@ -35,9 +33,8 @@ impl RootLogs {
 
 const RE_PATTERN_TITEL: &'static str = r"<titel>.*</titel>";
 
-pub fn parse_root(data: &mut HttpData) -> Result<RootLogs, OplError> {
-    let utc: DateTime<Utc> = Utc::now();
-    //  println!("{}
+pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
+    //let utc: DateTime<Utc> = Utc::now();
     let mut root_logs = RootLogs::new();
 
     let re_titel = Regex::new(RE_PATTERN_TITEL).unwrap();
@@ -92,4 +89,37 @@ fn parse_titel(selector: &Selector, line: &str) -> Result<String, OplError> {
     let fragment = Html::parse_fragment(line);
     let v = fragment.select(&selector).next().unwrap();
     Ok(v.inner_html())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::http::HttpData;
+    use crate::parse;
+    use std::collections::HashMap;
+    use std::fs;
+    use std::io::{self, BufRead, BufReader, Read};
+
+    #[test]
+    fn parse_root() {
+        let f = fs::File::open("tests/fomis.log").expect("Datei konnte nicht geöffnet werden!");
+        let reader = BufReader::new(f);
+        let mut buf: Vec<Vec<u8>> = Vec::new();
+        for r in reader.lines() {
+            match r {
+                Ok(r) => buf.push(r.into_bytes()),
+                Err(e) => {
+                    println!("{}",e);
+                    assert!(false);
+                },
+            }
+        }
+        let data = HttpData {
+            url: "testurl".to_string(),
+            status: "teststatus".to_string(),
+            header: HashMap::new(),
+            body: buf,
+        };
+        let result = parse::parse_root(data);
+        assert_eq!(result.err(), None)
+    }
 }

@@ -7,32 +7,14 @@ mod term;
 
 extern crate clap;
 extern crate crossterm;
-//#[macro_use]
-//extern crate lazy_static;
-//extern crate regex;
-
-use std::collections::HashMap;
-use std::error::Error;
-use std::io;
-
-use std::time::Duration;
 
 use clap::{App, AppSettings, Arg};
 
-use hyper::{body::HttpBody, client::HttpConnector};
-use hyper_tls::HttpsConnector;
-use tokio::signal;
-use tokio::time::{self};
-
-use crossterm::terminal::ClearType;
-use std::str::FromStr;
-
 use crate::config::Config;
-use crate::error::OplError;
+use crate::error::{OplError, OplErrorKind};
 use crate::http::{fetch_url, HttpData};
 use crate::opltyp::OplTyp;
-use crate::term::enter_alternate_screen;
-use std::io::StdoutLock;
+//use crate::term::enter_alternate_screen;
 
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
@@ -75,29 +57,38 @@ async fn main() -> Result<(), OplError> {
         ("fomis", Some(fomis_matches)) => match fomis_matches.subcommand() {
             ("serve", Some(serve_matches)) => {
                 let day_offset = serve_matches.value_of("day-offset");
-
-                if let Some(mut data) = fetch_url(OplTyp::FOMIS, &config).await? {
-                    print_root(&mut out_locked, &mut data, OplTyp::FOMIS, day_offset)?;
+                let mut offset: u32 = 0;
+                if day_offset.is_some() {
+                    offset = day_offset
+                        .unwrap()
+                        .parse::<u32>()
+                        .map_err(|_| OplError::new(OplErrorKind::ParseError))?;
+                }
+                if let Some(data) = fetch_url(OplTyp::FOMIS, &config).await? {
+                    print_root(&mut out_locked, data, offset).await?;
                 }
             }
             ("config", Some(_config_matches)) => {
                 println!("{}", config.get_config_for(OplTyp::FOMIS)?)
             }
-            ("list", None) => {}
+            // ("list", None) => {}
             _ => unreachable!(),
         },
+        // ("list", None) => {
+        //     println!("Listtststststst");
+        // }
+        // _ => unreachable!(),
         _ => unreachable!(),
     }
     Ok(())
 }
 
-pub fn print_root(
+pub async fn print_root(
     stdout: &mut tokio::io::Stdout,
-    data: &mut HttpData,
-    opltyp: OplTyp,
-    day_offset: Option<&str>,
+    data: HttpData,
+    day_offset: u32,
 ) -> Result<(), OplError> {
     let ergebnis = parse::parse_root(data)?;
-    term::print_root(stdout, ergebnis, opltyp)?;
+    term::print_root(stdout, ergebnis, day_offset).await?;
     Ok(())
 }

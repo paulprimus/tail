@@ -1,12 +1,9 @@
 use serde::Deserialize;
 
 use crate::error::{OplError, OplErrorKind};
-use crate::http::HttpData;
 use crate::opltyp::OplTyp;
-use crate::parse;
-use crate::term;
 use std::fs::File;
-use std::io::{Read, StdoutLock};
+use std::io::Read;
 use toml;
 
 #[derive(Debug, Deserialize)]
@@ -19,12 +16,6 @@ pub struct Config {
 struct Fomis {
     root: Root,
 }
-
-// impl Fomis {
-//     fn url(&self) -> (String,String) {
-//         (&self.root.test,&self.root.prod);
-//     }
-// }
 
 #[derive(Debug, Deserialize)]
 struct Dqm {
@@ -60,7 +51,7 @@ impl Config {
         let url = match opl_typ {
             OplTyp::FOMIS => self.fomis.root.test,
             OplTyp::DQM => self.dqm.root.test,
-            _ => unreachable!(),
+            //_ => unreachable!(),
         };
         Ok(url)
     }
