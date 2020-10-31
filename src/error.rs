@@ -46,11 +46,7 @@ impl From<hyper::Error> for OplError {
     }
 }
 
-// impl From<crossterm::ErrorKind> for OplError {
-//     fn from(_: ErrorKind) -> Self {
-//         OplError::new(OplErrorKind::CrosstermError)
-//     }
-// }
+
 
 #[derive(Debug, PartialEq)]
 pub enum OplErrorKind {

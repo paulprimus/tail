@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 
-use hyper::{body::HttpBody, client::HttpConnector};
+use hyper::{body::HttpBody, client::HttpConnector, StatusCode};
 use hyper_tls::HttpsConnector;
 
 use crate::config::Config;
@@ -49,7 +49,6 @@ impl fmt::Display for HttpData {
     }
 }
 
-//pub async fn fetch_url(url: hyper::Uri) -> Result<Option<HttpData>, OplError> {
 pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpData>, OplError> {
     let url = config.get_url_for(opltyp)?;
     let hyper_uri = url.parse::<hyper::Uri>()?;
@@ -60,6 +59,9 @@ pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpDat
     http_data.url = url;
     let res = client.get(hyper_uri).await?;
     let status_code = res.status();
+    if status_code != StatusCode::OK {
+        return Err(OplError::new(OplErrorKind::HyperError(status_code.to_string())));
+    }
     http_data.status = status_code.to_string();
 
     let possible_size = res.body().size_hint().lower();

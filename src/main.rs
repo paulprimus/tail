@@ -14,16 +14,23 @@ use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
 use crate::http::{fetch_url, HttpData};
 use crate::opltyp::OplTyp;
+use std::process;
 //use crate::term::enter_alternate_screen;
 
 #[tokio::main]
-async fn main() -> Result<(), OplError> {
+async fn main() {
     let matches = App::new("tail - following logs made easy!")
         .version("0.1.1")
         .author("Paul Pacher")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(
-            App::new("fomis")
+            App::new("fomis").arg(
+                Arg::with_name("env")
+                    .short("e")
+                    .long("environment")
+                    .help("[test|prod]")
+                    .takes_value(false)
+            )
                 .about("fomis app")
                 .setting(AppSettings::SubcommandRequiredElseHelp)
                 .subcommand(
@@ -62,14 +69,30 @@ async fn main() -> Result<(), OplError> {
                     offset = day_offset
                         .unwrap()
                         .parse::<u32>()
-                        .map_err(|_| OplError::new(OplErrorKind::ParseError))?;
+                        .unwrap_or_else(|err| {
+                            eprintln!("Offset muss eine natürlich Zahl sein: {}", err);
+                            process::exit(1);
+                        });
                 }
-                if let Some(data) = fetch_url(OplTyp::FOMIS, &config).await? {
-                    print_root(&mut out_locked, data, offset).await?;
+                let option_data = fetch_url(OplTyp::FOMIS, &config).await.unwrap_or_else(|err| {
+                    eprintln!("{}", err);
+                    process::exit(1);
+                });
+                if option_data.is_some() {
+                     print_root(&mut out_locked, option_data.unwrap(), offset).await.unwrap_or_else(|err| {
+                         eprintln!("{}", err);
+                         process::exit(1);
+                     });
+                } else {
+                    println!("No Data found!");
                 }
             }
             ("config", Some(_config_matches)) => {
-                println!("{}", config.get_config_for(OplTyp::FOMIS)?)
+                let config = config.get_config_for(OplTyp::FOMIS).unwrap_or_else(|err| {
+                    eprintln!("Kein Konfiguration vorhanden: {}", err);
+                    process::exit(1);
+                });
+                println!("{}", config);
             }
             // ("list", None) => {}
             _ => unreachable!(),
@@ -80,7 +103,7 @@ async fn main() -> Result<(), OplError> {
         // _ => unreachable!(),
         _ => unreachable!(),
     }
-    Ok(())
+    //Ok(())
 }
 
 pub async fn print_root(

@@ -28,6 +28,12 @@ struct Root {
     prod: String,
 }
 
+pub enum Environment {
+    ENTW,
+    TEST,
+    PROD
+}
+
 pub fn parse() -> Result<Config, OplError> {
     let mut inhalt_config = String::new();
     File::open("config.toml").and_then(|mut f| f.read_to_string(&mut inhalt_config))?;
@@ -46,7 +52,7 @@ impl Config {
         };
         Ok(url)
     }
-    pub fn get_config_for(self, opl_typ: OplTyp) -> Result<String, OplError> {
+    pub fn get_config_for(self, opl_typ: OplTyp, env: Environment) -> Result<String, OplError> {
         //let config = parse()?;
         let url = match opl_typ {
             OplTyp::FOMIS => self.fomis.root.test,
