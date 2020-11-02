@@ -3,7 +3,7 @@ use crate::http::HttpData;
 use chrono::prelude::*;
 use regex::Regex;
 use scraper::{Html, Selector};
-use std::collections::{BTreeMap};
+use std::collections::BTreeMap;
 
 pub struct RootLogs {
     pub url: String,
@@ -108,9 +108,9 @@ mod tests {
             match r {
                 Ok(r) => buf.push(r.into_bytes()),
                 Err(e) => {
-                    println!("{}",e);
+                    println!("{}", e);
                     assert!(false);
-                },
+                }
             }
         }
         let data = HttpData {

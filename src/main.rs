@@ -24,13 +24,14 @@ async fn main() {
         .author("Paul Pacher")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(
-            App::new("fomis").arg(
-                Arg::with_name("env")
-                    .short("e")
-                    .long("environment")
-                    .help("[test|prod]")
-                    .takes_value(false)
-            )
+            App::new("fomis")
+                .arg(
+                    Arg::with_name("env")
+                        .short("e")
+                        .long("environment")
+                        .help("[test|prod]")
+                        .takes_value(false),
+                )
                 .about("fomis app")
                 .setting(AppSettings::SubcommandRequiredElseHelp)
                 .subcommand(
@@ -53,7 +54,7 @@ async fn main() {
             print!("- {}", OplTyp::DQM);
             print!("- {}", OplTyp::FOMIS);
         }
-        Some("fomis") => { /*Nichts*/ }
+        Some("fomis") =>  {},
         _ => unreachable!(),
     };
 
@@ -61,32 +62,36 @@ async fn main() {
     // let mut out_locked = out.lock();
 
     match matches.subcommand() {
-        ("fomis", Some(fomis_matches)) => match fomis_matches.subcommand() {
+        ("fomis", Some(fomis_matches)) => {
+
+            match fomis_matches.subcommand() => {
+
             ("serve", Some(serve_matches)) => {
                 let day_offset = serve_matches.value_of("day-offset");
                 let mut offset: u32 = 0;
                 if day_offset.is_some() {
-                    offset = day_offset
-                        .unwrap()
-                        .parse::<u32>()
+                    offset = day_offset.unwrap().parse::<u32>().unwrap_or_else(|err| {
+                        eprintln!("Offset muss eine natürlich Zahl sein: {}", err);
+                        process::exit(1);
+                    });
+                }
+                let option_data = fetch_url(OplTyp::FOMIS, &config)
+                    .await
+                    .unwrap_or_else(|err| {
+                        eprintln!("{}", err);
+                        process::exit(1);
+                    });
+                if option_data.is_some() {
+                    print_root(&mut out_locked, option_data.unwrap(), offset)
+                        .await
                         .unwrap_or_else(|err| {
-                            eprintln!("Offset muss eine natürlich Zahl sein: {}", err);
+                            eprintln!("{}", err);
                             process::exit(1);
                         });
-                }
-                let option_data = fetch_url(OplTyp::FOMIS, &config).await.unwrap_or_else(|err| {
-                    eprintln!("{}", err);
-                    process::exit(1);
-                });
-                if option_data.is_some() {
-                     print_root(&mut out_locked, option_data.unwrap(), offset).await.unwrap_or_else(|err| {
-                         eprintln!("{}", err);
-                         process::exit(1);
-                     });
                 } else {
                     println!("No Data found!");
                 }
-            }
+            }}}
             ("config", Some(_config_matches)) => {
                 let config = config.get_config_for(OplTyp::FOMIS).unwrap_or_else(|err| {
                     eprintln!("Kein Konfiguration vorhanden: {}", err);

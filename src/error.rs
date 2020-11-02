@@ -46,8 +46,6 @@ impl From<hyper::Error> for OplError {
     }
 }
 
-
-
 #[derive(Debug, PartialEq)]
 pub enum OplErrorKind {
     ParseError,

@@ -60,7 +60,9 @@ pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpDat
     let res = client.get(hyper_uri).await?;
     let status_code = res.status();
     if status_code != StatusCode::OK {
-        return Err(OplError::new(OplErrorKind::HyperError(status_code.to_string())));
+        return Err(OplError::new(OplErrorKind::HyperError(
+            status_code.to_string(),
+        )));
     }
     http_data.status = status_code.to_string();
 

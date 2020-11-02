@@ -31,7 +31,7 @@ struct Root {
 pub enum Environment {
     ENTW,
     TEST,
-    PROD
+    PROD,
 }
 
 pub fn parse() -> Result<Config, OplError> {
