@@ -7,7 +7,7 @@ use hyper_tls::HttpsConnector;
 
 use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
-use crate::opltyp::OplTyp;
+use crate::opltyp::OplCmdTyp;
 
 const NEW_LINE: u8 = b'\n';
 
@@ -49,7 +49,7 @@ impl fmt::Display for HttpData {
     }
 }
 
-pub async fn fetch_url(opltyp: OplTyp, config: &Config) -> Result<Option<HttpData>, OplError> {
+pub async fn fetch_url(opltyp: OplCmdTyp, config: &Config) -> Result<Option<HttpData>, OplError> {
     let url = config.get_url_for(opltyp)?;
     let hyper_uri = url.parse::<hyper::Uri>()?;
     let https: HttpsConnector<HttpConnector> = HttpsConnector::new();

@@ -1,4 +1,3 @@
-//use crossterm::ErrorKind;
 use hyper::http;
 
 use std::{error, fmt, io};
@@ -22,7 +21,10 @@ impl fmt::Display for OplError {
             OplErrorKind::FileNotFound(err) => write!(f, "Datei nicht gefunden! {}", err),
             OplErrorKind::HyperError(err) => writeln!(f, "Hyper Fehler: {}", err),
             OplErrorKind::IvalidUri => writeln!(f, "Uri ist nicht valide!"),
-            // OplErrorKind::CrosstermError => writeln!(f, "Crossterm hat nicht geklappt!"),
+            OplErrorKind::EnvironmentNotFoundError => writeln!(
+                f,
+                "Die angeführte Umgebung existiert nicht! Erlaubt sind: ENTW/TEST/PROD"
+            ),
             OplErrorKind::Utf8Error => writeln!(f, "UTF-8 Fehler"),
         }
     }
@@ -52,6 +54,6 @@ pub enum OplErrorKind {
     FileNotFound(String),
     HyperError(String),
     IvalidUri,
-    // CrosstermError,
+    EnvironmentNotFoundError,
     Utf8Error,
 }

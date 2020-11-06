@@ -1,5 +1,5 @@
 use crate::error::OplError;
-use crate::opltyp::OplTyp;
+use crate::opltyp::OplCmdTyp;
 use crate::parse::RootLogs;
 use chrono::prelude::*;
 use chrono::Duration;
