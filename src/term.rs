@@ -1,12 +1,11 @@
 use crate::error::OplError;
-use crate::opltyp::OplCmdTyp;
 use crate::parse::RootLogs;
 use chrono::prelude::*;
 use chrono::Duration;
 use tokio::io::{AsyncWriteExt, BufWriter, Stdout};
 
 pub async fn print_root(
-    stdout: &mut tokio::io::Stdout,
+    stdout: tokio::io::Stdout,
     data: RootLogs,
     offset: u32,
 ) -> Result<(), OplError> {
@@ -40,7 +39,7 @@ async fn print_btree(
 }
 
 async fn print_entry(
-    writer: &mut BufWriter<&mut Stdout>,
+    &mut  writer: BufWriter<&mut Stdout>,
     date: Date<Utc>,
     v: &[String],
 ) -> Result<(), OplError> {

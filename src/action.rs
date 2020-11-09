@@ -1,13 +1,15 @@
-use crate::error::{OplError, OplErrorKind};
-use crate::opltyp::{OplCmdTyp, FomisCmdTyp};
-use std::str::FromStr;
-use crate::http::fetch_url;
-use std::process;
 use crate::config::Config;
+use crate::error::{OplError, OplErrorKind};
+use crate::http::fetch_url;
+use crate::opltyp::OplCmdTyp;
+use crate::term::print_root;
+use std::str::FromStr;
+use std::io::{stdout};
+use crate::parse::parse_root;
 
 pub struct ActionParam {
     pub env: Environment,
-    pub opltype: OplCmdTyp
+    pub opltype: OplCmdTyp,
 }
 
 #[derive(Debug)]
@@ -30,16 +32,20 @@ impl FromStr for Environment {
     }
 }
 
-async fn doAction(cmd: &OplCmdTyp, config: Config) {
-    match cmd {
-        OplCmdTyp::FOMIS(fomisCmd) => {
-            fetch_url(cmd, &config)
-                .await
-                .unwrap_or_else(|err| {
-                    eprintln!("{}", err);
-                    process::exit(1);
-                });
+pub async fn do_action(action_param: ActionParam, config: Config) -> Result<(), OplError> {
+    let opl_cmd = action_param.opltype;
+    let mut stdout = tokio::io::stdout();
+    match opl_cmd {
+        OplCmdTyp::FOMIS(_fomis_cmd) => {
+            let data = fetch_url(opl_cmd, &config).await?;
+            let logs = parse_root(data.unwrap())?;
+            print_root(stdout, logs, 10);
+            // .unwrap_or_else(|err| {
+            //     eprintln!("{}", err);
+            //     process::exit(1);
+            // });
         }
         _ => {}
-    }
+    };
+    Ok(())
 }

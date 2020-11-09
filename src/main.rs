@@ -1,29 +1,32 @@
 extern crate clap;
-extern crate crossterm;
-
+use std::io::Read;
 use std::process;
 use std::str::FromStr;
 
+use crate::action::{ActionParam, Environment};
+use crate::config::Config;
+use crate::error::OplError;
+use crate::http::HttpData;
+use crate::opltyp::OplCmdTyp;
 use clap::{App, AppSettings, Arg};
 
-use crate::config::Config;
-use crate::error::{OplError, OplErrorKind};
-use crate::http::{fetch_url, HttpData};
-use crate::opltyp::{OplCmdTyp, FomisCmdTyp};
-use crate::action::{Environment, ActionParam};
-
+mod action;
 mod config;
 mod error;
 mod http;
 mod opltyp;
 mod parse;
-mod action;
 mod term;
 
-//use crate::term::enter_alternate_screen;
-
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), OplError> {
+    let actionParam = parseCli().await?;
+    let config = create_config().await?;
+    action::do_action(actionParam, config).await?;
+    Ok(())
+}
+
+async fn parseCli() -> Result<ActionParam, OplError> {
     let matches = App::new("tail - following logs made easy!")
         .version("0.1.1")
         .author("Paul Pacher")
@@ -53,27 +56,19 @@ async fn main() {
         .subcommand(App::new("list").help_message("Auflistung aller Services"))
         .get_matches();
 
-
     match matches.subcommand_name() {
         Some("list") => {
-            print!("- {}", OplCmdTyp::DQM);
-            print!("- {}", OplCmdTyp::FOMIS(FomisCmdTyp::LIST(10)));
+            print!("- DQM");
+            print!("- FOMIS");
         }
         Some("fomis") => {}
         _ => unreachable!(),
     };
 
-    let config = match Config::new() {
-        Ok(v) => v,
-        Err(err) => {
-            eprintln!("Die Konfiguration konnte nicht ausgelesen werden: {}", err);
-            process::exit(1)
-        }
+    let mut actionParam = ActionParam {
+        env: Environment::TEST,
+        opltype: OplCmdTyp::CONFIG,
     };
-
-    let mut out_locked = tokio::io::stdout();
-
-    let mut actionParam = ActionParam { env: Environment::TEST, opltype: OplCmdTyp::CONFIG };
 
     match matches.subcommand() {
         ("fomis", Some(fomis_matches)) => {
@@ -100,53 +95,37 @@ async fn main() {
                             eprintln!("Offset muss eine natürlich Zahl sein: {}", err);
                             process::exit(1);
                         });
-                    }
-                    let option_data =
-                        fetch_url(OplCmdTyp::FOMIS, &config)
-                            .await
-                            .unwrap_or_else(|err| {
-                                eprintln!("{}", err);
-                                process::exit(1);
-                            });
-                    if option_data.is_some() {
-                        print_root(&mut out_locked, option_data.unwrap(), offset)
-                            .await
-                            .unwrap_or_else(|err| {
-                                eprintln!("{}", err);
-                                process::exit(1);
-                            });
+                        actionParam.opltype = OplCmdTyp::FOMIS(Some(offset));
                     } else {
-                        println!("No Data found!");
+                        actionParam.opltype = OplCmdTyp::FOMIS(None);
                     }
                 }
-                ("config", Some(_config_matches)) => {
-                    let config = config
-                        .get_config_for(OplCmdTyp::FOMIS, action::Environment::TEST)
-                        .unwrap_or_else(|err| {
-                            eprintln!("Kein Konfiguration vorhanden: {}", err);
-                            process::exit(1);
-                        });
-                    println!("{}", config);
-                }
-                // ("list", None) => {}
+                ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
             }
         }
-        // ("list", None) => {
-        //     println!("Listtststststst");
-        // }
-        // _ => unreachable!(),
         _ => unreachable!(),
     }
-    //Ok(())
+    Ok(actionParam)
 }
 
-pub async fn print_root(
-    stdout: &mut tokio::io::Stdout,
-    data: HttpData,
-    day_offset: u32,
-) -> Result<(), OplError> {
-    let ergebnis = parse::parse_root(data)?;
-    term::print_root(stdout, ergebnis, day_offset).await?;
-    Ok(())
+async fn create_config() -> Result<Config, OplError> {
+    let config = match Config::new() {
+        Ok(v) => v,
+        Err(err) => {
+            eprintln!("Die Konfiguration konnte nicht ausgelesen werden: {}", err);
+            process::exit(1)
+        }
+    };
+    Ok(config)
 }
+
+// async fn print_root(
+//     &mut stdout: tokio::io::Stdout,
+//     data: HttpData,
+//     day_offset: u32,
+// ) -> Result<(), OplError> {
+//     let ergebnis = parse::parse_root(data)?;
+//     term::print_root(stdout, ergebnis, day_offset).await?;
+//     Ok(())
+// }

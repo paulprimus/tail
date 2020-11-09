@@ -1,12 +1,10 @@
 use serde::Deserialize;
 
+use crate::action::Environment;
 use crate::error::{OplError, OplErrorKind};
 use crate::opltyp::OplCmdTyp;
-use crate::action::Environment;
 use std::fs::File;
 use std::io::Read;
-use std::str::FromStr;
-use std::string::ParseError;
 use toml;
 
 #[derive(Debug, Deserialize)]
@@ -43,7 +41,7 @@ impl Config {
     pub fn get_url_for(&self, opl_typ: OplCmdTyp) -> Result<String, OplError> {
         //let config = parse()?;
         let url: String = match opl_typ {
-            OplCmdTyp::FOMIS(FomisCmdTyp) => self.fomis.root.test.to_string(),
+            OplCmdTyp::FOMIS(_fc) => self.fomis.root.test.to_string(),
             OplCmdTyp::DQM => self.dqm.root.test.to_string(),
             _ => unreachable!(),
         };
@@ -54,7 +52,7 @@ impl Config {
         let url = match opl_typ {
             OplCmdTyp::FOMIS(fomisCmdTyp) => self.fomis.root.test,
             OplCmdTyp::DQM => self.dqm.root.test,
-            //_ => unreachable!(),
+            _ => String::from(""),
         };
         Ok(url)
     }
