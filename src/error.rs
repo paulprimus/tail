@@ -17,15 +17,15 @@ impl OplError {
 impl fmt::Display for OplError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.0 {
-            OplErrorKind::ParseError => write!(f, "Parse Error"),
+            OplErrorKind::ParseError(err) => write!(f, "Parsing Error: {}", err),
             OplErrorKind::FileNotFound(err) => write!(f, "Datei nicht gefunden! {}", err),
             OplErrorKind::HyperError(err) => writeln!(f, "Hyper Fehler: {}", err),
-            OplErrorKind::IvalidUri => writeln!(f, "Uri ist nicht valide!"),
+        //    OplErrorKind::IvalidUri => writeln!(f, "Uri ist nicht valide!"),
             OplErrorKind::EnvironmentNotFoundError => writeln!(
                 f,
                 "Die angeführte Umgebung existiert nicht! Erlaubt sind: ENTW/TEST/PROD"
             ),
-            OplErrorKind::Utf8Error => writeln!(f, "UTF-8 Fehler"),
+            // OplErrorKind::Utf8Error => writeln!(f, "UTF-8 Fehler"),
         }
     }
 }
@@ -50,10 +50,10 @@ impl From<hyper::Error> for OplError {
 
 #[derive(Debug, PartialEq)]
 pub enum OplErrorKind {
-    ParseError,
+    ParseError(String),
     FileNotFound(String),
     HyperError(String),
-    IvalidUri,
+    //IvalidUri,
     EnvironmentNotFoundError,
-    Utf8Error,
+    // Utf8Error,
 }

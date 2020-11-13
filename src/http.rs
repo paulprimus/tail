@@ -5,9 +5,9 @@ use std::fmt::Formatter;
 use hyper::{body::HttpBody, client::HttpConnector, StatusCode};
 use hyper_tls::HttpsConnector;
 
-use crate::config::Config;
+// use crate::action::ActionParam;
+//use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
-use crate::opltyp::OplCmdTyp;
 
 const NEW_LINE: u8 = b'\n';
 
@@ -49,8 +49,8 @@ impl fmt::Display for HttpData {
     }
 }
 
-pub async fn fetch_url(opltyp: OplCmdTyp, config: &Config) -> Result<Option<HttpData>, OplError> {
-    let url = config.get_url_for(opltyp)?;
+pub async fn fetch_url(url: String) -> Result<Option<HttpData>, OplError> {
+    //let url = config.get_url_for(action)?;
     let hyper_uri = url.parse::<hyper::Uri>()?;
     let https: HttpsConnector<HttpConnector> = HttpsConnector::new();
     let client = hyper::Client::builder().build::<_, hyper::Body>(https);

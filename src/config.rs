@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
-use crate::action::Environment;
+// use crate::action::Environment::TEST;
+use crate::action::{ActionParam, Environment};
 use crate::error::{OplError, OplErrorKind};
 use crate::opltyp::OplCmdTyp;
 use std::fs::File;
@@ -32,33 +33,47 @@ struct Root {
 fn parse() -> Result<Config, OplError> {
     let mut inhalt_config = String::new();
     File::open("config.toml").and_then(|mut f| f.read_to_string(&mut inhalt_config))?;
-    let mut config: Config =
-        toml::from_str(&inhalt_config).map_err(|_| OplError::new(OplErrorKind::ParseError))?;
+    let config: Config =
+        toml::from_str(&inhalt_config).map_err(|err| OplError::new(OplErrorKind::ParseError(err.to_string())))?;
     Ok(config)
 }
 
 impl Config {
-    pub fn get_url_for(&self, opl_typ: OplCmdTyp) -> Result<String, OplError> {
+    // pub fn get_url_for(&self, opl_typ: OplCmdTyp) -> Result<String, OplError> {
+    //     //let config = parse()?;
+    //     let url: String = match opl_typ {
+    //         OplCmdTyp::FOMIS(_fc) => self.fomis.root.test.to_string(),
+    //         OplCmdTyp::DQM => self.dqm.root.test.to_string(),
+    //         _ => unreachable!(),
+    //     };
+    //     Ok(url)
+    // }
+
+    pub fn get_url_for(&self, action_param: &ActionParam) -> Result<String, OplError> {
         //let config = parse()?;
-        let url: String = match opl_typ {
-            OplCmdTyp::FOMIS(_fc) => self.fomis.root.test.to_string(),
-            OplCmdTyp::DQM => self.dqm.root.test.to_string(),
+
+        let url: String = match action_param.opltype {
+            OplCmdTyp::FOMIS(_offset) => {
+                if action_param.env == Environment::TEST {
+                    self.fomis.root.test.to_string()
+                } else {
+                    self.fomis.root.prod.to_string()
+                }
+            }
+            OplCmdTyp::DQM(_offset) => {
+                if action_param.env == Environment::TEST {
+                    self.dqm.root.test.to_string()
+                } else {
+                    self.dqm.root.prod.to_string()
+                }
+            },
             _ => unreachable!(),
-        };
-        Ok(url)
-    }
-    pub fn get_config_for(self, opl_typ: OplCmdTyp, env: Environment) -> Result<String, OplError> {
-        //let config = parse()?;
-        let url = match opl_typ {
-            OplCmdTyp::FOMIS(fomisCmdTyp) => self.fomis.root.test,
-            OplCmdTyp::DQM => self.dqm.root.test,
-            _ => String::from(""),
         };
         Ok(url)
     }
 
     pub fn new() -> Result<Config, OplError> {
-        let mut config = parse()?;
+        let config = parse()?;
         Ok(config)
     }
 }

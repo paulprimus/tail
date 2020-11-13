@@ -45,7 +45,7 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
     root_logs.url = data.url.clone();
     for line in &data.body {
         let str = String::from_utf8(line.to_vec())
-            .map_err(|_| OplError::new(OplErrorKind::ParseError))?;
+            .map_err(|err| OplError::new(OplErrorKind::ParseError(err.to_string())))?;
         if re_titel.is_match(str.as_str()) {
             root_logs.title = parse_titel(&title_selector, &str)?;
         } else if re_log.is_match(str.as_str()) {
@@ -60,7 +60,7 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
                     .expect("Jahr konnte nicht ausgelesen werden!")
             }) {
                 Some(y) => y,
-                None => return Err(OplError::new(OplErrorKind::ParseError)),
+                None => return Err(OplError::new(OplErrorKind::ParseError("Jahr konnte nicht geparst werden!".to_string()))),
             };
             let monat = match caps.get(2).map(|e| {
                 e.as_str()
@@ -68,7 +68,7 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
                     .expect("Monat konnte nicht ausgelesen werden!")
             }) {
                 Some(y) => y,
-                None => return Err(OplError::new(OplErrorKind::ParseError)),
+                None => return Err(OplError::new(OplErrorKind::ParseError("Monat konnte nicht geparst werden!".to_string()))),
             };
             let day = match caps.get(3).map(|e| {
                 e.as_str()
@@ -76,7 +76,7 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
                     .expect("Tag konnte nicht ausgelesen werden!")
             }) {
                 Some(y) => y,
-                None => return Err(OplError::new(OplErrorKind::ParseError)),
+                None => return Err(OplError::new(OplErrorKind::ParseError("Tag konnte nicht geparst werden!".to_string()))),
             };
             let date = Utc.ymd(year, monat, day);
             root_logs.append_log(date, v.inner_html())?;
@@ -97,7 +97,7 @@ mod tests {
     use crate::parse;
     use std::collections::HashMap;
     use std::fs;
-    use std::io::{self, BufRead, BufReader, Read};
+    use std::io::{BufRead, BufReader};
 
     #[test]
     fn parse_root() {

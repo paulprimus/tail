@@ -7,17 +7,17 @@ use tokio::io::{AsyncWriteExt, BufWriter, Stdout};
 pub async fn print_root(
     stdout: tokio::io::Stdout,
     data: RootLogs,
-    offset: u32,
+    offset: &Option<u32>,
 ) -> Result<(), OplError> {
     let mut writer = BufWriter::new(stdout);
-    if offset == 0 {
+    if offset.is_none() {
         for (k, v) in data.logs {
             print_entry(&mut writer, k, &v).await?;
             writer.flush();
         }
     } else {
         let today = Utc::today();
-        print_btree(data, offset, &mut writer, today).await?;
+        print_btree(data, offset.unwrap(), &mut writer, today).await?;
     }
     Ok(())
 }
@@ -25,7 +25,7 @@ pub async fn print_root(
 async fn print_btree(
     data: RootLogs,
     offset: u32,
-    writer: &mut BufWriter<&mut Stdout>,
+    writer: &mut BufWriter<Stdout>,
     today: Date<Utc>,
 ) -> Result<(), OplError> {
     for i in 1..offset {
@@ -39,7 +39,7 @@ async fn print_btree(
 }
 
 async fn print_entry(
-    &mut  writer: BufWriter<&mut Stdout>,
+    writer: &mut BufWriter<Stdout>,
     date: Date<Utc>,
     v: &[String],
 ) -> Result<(), OplError> {
