@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
-use crate::opltyp::OplCmdTyp;
+use crate::opltyp::OplCmd;
 use crate::parse::parse_root;
 use crate::term::print_root;
 use std::str::FromStr;
@@ -9,7 +9,7 @@ use std::str::FromStr;
 #[derive(Debug)]
 pub struct ActionParam {
     pub env: Environment,
-    pub opltype: OplCmdTyp,
+    pub opltype: OplCmd,
 }
 
 #[derive(Debug, PartialEq)]
@@ -37,8 +37,8 @@ pub async fn do_action(action_param: ActionParam, config: Config) -> Result<(), 
     //    println!("{:?} - {:?}", action_param, config);
     let stdout = tokio::io::stdout();
     match &action_param.opltype {
-        OplCmdTyp::FOMIS(offset) => list_root(&action_param, config, stdout, offset).await?,
-        OplCmdTyp::DQM(offset) => list_root(&action_param, config, stdout, offset).await?,
+        OplCmd::FOMIS(offset) => list_root(&action_param, config, stdout, offset).await?,
+        OplCmd::DQM(offset) => list_root(&action_param, config, stdout, offset).await?,
         _ => unreachable!("Darf nicht passieren!"),
     };
     Ok(())

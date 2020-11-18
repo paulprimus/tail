@@ -8,7 +8,7 @@ use clap::{App, AppSettings, Arg, ArgMatches};
 use crate::action::{ActionParam, Environment};
 use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
-use crate::opltyp::OplCmdTyp;
+use crate::opltyp::OplCmd;
 
 mod action;
 mod config;
@@ -81,7 +81,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
 
     let mut action_param = ActionParam {
         env: Environment::TEST,
-        opltype: OplCmdTyp::CONFIG,
+        opltype: OplCmd::CONFIG,
     };
 
     match matches.subcommand() {
@@ -89,7 +89,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             action_param.env = match_env(fomis_matches);
             match fomis_matches.subcommand() {
                 ("list", Some(list_matches)) => {
-                    action_param.opltype = OplCmdTyp::FOMIS(match_list(list_matches)?);
+                    action_param.opltype = OplCmd::FOMIS(match_list(list_matches)?);
                 }
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
@@ -99,7 +99,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             action_param.env = match_env(dqm_matches);
             match dqm_matches.subcommand() {
                 ("list", Some(list_matches)) => {
-                    action_param.opltype = OplCmdTyp::DQM(match_list(list_matches)?);
+                    action_param.opltype = OplCmd::DQM(match_list(list_matches)?);
                 }
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
