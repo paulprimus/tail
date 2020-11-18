@@ -11,10 +11,11 @@ pub async fn print_root(
 ) -> Result<(), OplError> {
     let mut writer = BufWriter::new(stdout);
     if offset.is_none() {
+        //println!("{:?}", data.logs);
         for (k, v) in data.logs {
             print_entry(&mut writer, k, &v).await?;
-            writer.flush();
         }
+        writer.flush().await?;
     } else {
         let today = Utc::today();
         print_btree(data, offset.unwrap(), &mut writer, today).await?;

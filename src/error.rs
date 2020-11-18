@@ -20,10 +20,10 @@ impl fmt::Display for OplError {
             OplErrorKind::ParseError(err) => write!(f, "Parsing Error: {}", err),
             OplErrorKind::FileNotFound(err) => write!(f, "Datei nicht gefunden! {}", err),
             OplErrorKind::HyperError(err) => writeln!(f, "Hyper Fehler: {}", err),
-        //    OplErrorKind::IvalidUri => writeln!(f, "Uri ist nicht valide!"),
+            //    OplErrorKind::IvalidUri => writeln!(f, "Uri ist nicht valide!"),
             OplErrorKind::EnvironmentNotFoundError => writeln!(
                 f,
-                "Die angeführte Umgebung existiert nicht! Erlaubt sind: ENTW/TEST/PROD"
+                "Die angeführte Umgebung existiert nicht! Erlaubt sind: [test/prod]"
             ),
             // OplErrorKind::Utf8Error => writeln!(f, "UTF-8 Fehler"),
         }

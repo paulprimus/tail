@@ -17,6 +17,7 @@ mod http;
 mod opltyp;
 mod parse;
 mod term;
+mod logtyp;
 
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
@@ -78,15 +79,6 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
         .subcommand(App::new("list").help_message("Auflistung aller Services"))
         .get_matches();
 
-    // match matches.subcommand_name() {
-    //     Some("list") => {
-    //         print!("- DQM");
-    //         print!("- FOMIS");
-    //     }
-    //     Some("fomis") => {}
-    //     _ => unreachable!(),
-    // };
-
     let mut action_param = ActionParam {
         env: Environment::TEST,
         opltype: OplCmdTyp::CONFIG,
@@ -94,7 +86,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
 
     match matches.subcommand() {
         ("fomis", Some(fomis_matches)) => {
-            action_param.env = match_env(fomis_matches)?;
+            action_param.env = match_env(fomis_matches);
             match fomis_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     action_param.opltype = OplCmdTyp::FOMIS(match_list(list_matches)?);
@@ -102,9 +94,9 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
             }
-        },
+        }
         ("dqm", Some(dqm_matches)) => {
-            action_param.env = match_env(dqm_matches)?;
+            action_param.env = match_env(dqm_matches);
             match dqm_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     action_param.opltype = OplCmdTyp::DQM(match_list(list_matches)?);
@@ -118,29 +110,33 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
     Ok(action_param)
 }
 
-fn match_env(arg_matches: &ArgMatches) -> Result<Environment, OplError> {
+fn match_env(arg_matches: &ArgMatches) -> Environment {
     if arg_matches.is_present("env") {
-        let env = Environment::from_str(
+        let opt = Environment::from_str(
             arg_matches
                 .value_of("env")
                 .expect("Umgebung konnte nicht ausgelesen werden"),
-        )
-        .unwrap_or(Environment::TEST);
-        //.map_err(|err| Err(OplError::new(OplErrorKind::ParseError(err.to_string()))));
-        return Ok(env);
+        );
+        let env = match opt {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{}", e);
+                std::process::exit(-1);
+            }
+        };
+
+        return env;
     }
-    Ok(Environment::TEST)
-    // else {
-    //     Err(OplError::new(OplErrorKind::ParseError(
-    //         "Umgebung konnte nicht ausgelesen werden #2!".to_string(),
-    //     )))
-    // }
+    Environment::TEST
 }
 
-fn match_list(arg_matches: &ArgMatches) -> Result<Option<u32>, OplError>{
+fn match_list(arg_matches: &ArgMatches) -> Result<Option<u32>, OplError> {
     let day_offset = arg_matches.value_of("day-offset");
     if day_offset.is_some() {
-        let result = day_offset.unwrap().parse::<u32>().map_err(|err| OplError::new(OplErrorKind::ParseError(err.to_string())))?;
+        let result = day_offset
+            .unwrap()
+            .parse::<u32>()
+            .map_err(|err| OplError::new(OplErrorKind::ParseError(err.to_string())))?;
         Ok(Some(result))
     } else {
         Ok(None)

@@ -5,6 +5,7 @@ use regex::Regex;
 use scraper::{Html, Selector};
 use std::collections::BTreeMap;
 
+#[derive(Debug)]
 pub struct RootLogs {
     pub url: String,
     pub title: String,
@@ -31,12 +32,10 @@ impl RootLogs {
     }
 }
 
-const RE_PATTERN_TITEL: &'static str = r"<titel>.*</titel>";
+const RE_PATTERN_TITEL: &str = r"<titel>.*</titel>";
 
 pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
-    //let utc: DateTime<Utc> = Utc::now();
     let mut root_logs = RootLogs::new();
-
     let re_titel = Regex::new(RE_PATTERN_TITEL).unwrap();
     let re_log = Regex::new(r#"(<img src="/icons/text.*)"#).unwrap();
     let re_timestamp = Regex::new(r"(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}").unwrap();
@@ -60,7 +59,11 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
                     .expect("Jahr konnte nicht ausgelesen werden!")
             }) {
                 Some(y) => y,
-                None => return Err(OplError::new(OplErrorKind::ParseError("Jahr konnte nicht geparst werden!".to_string()))),
+                None => {
+                    return Err(OplError::new(OplErrorKind::ParseError(
+                        "Jahr konnte nicht geparst werden!".to_string(),
+                    )))
+                }
             };
             let monat = match caps.get(2).map(|e| {
                 e.as_str()
@@ -68,7 +71,11 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
                     .expect("Monat konnte nicht ausgelesen werden!")
             }) {
                 Some(y) => y,
-                None => return Err(OplError::new(OplErrorKind::ParseError("Monat konnte nicht geparst werden!".to_string()))),
+                None => {
+                    return Err(OplError::new(OplErrorKind::ParseError(
+                        "Monat konnte nicht geparst werden!".to_string(),
+                    )))
+                }
             };
             let day = match caps.get(3).map(|e| {
                 e.as_str()
@@ -76,7 +83,11 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
                     .expect("Tag konnte nicht ausgelesen werden!")
             }) {
                 Some(y) => y,
-                None => return Err(OplError::new(OplErrorKind::ParseError("Tag konnte nicht geparst werden!".to_string()))),
+                None => {
+                    return Err(OplError::new(OplErrorKind::ParseError(
+                        "Tag konnte nicht geparst werden!".to_string(),
+                    )))
+                }
             };
             let date = Utc.ymd(year, monat, day);
             root_logs.append_log(date, v.inner_html())?;
@@ -120,6 +131,6 @@ mod tests {
             body: buf,
         };
         let result = parse::parse_root(data);
-        assert_eq!(result.err(), None)
+        assert_eq!(result.err(), None);
     }
 }

@@ -16,7 +16,9 @@ impl FromStr for OplCmdTyp {
         match s {
             "FOMIS" => Ok(OplCmdTyp::FOMIS(None)),
             "DQM" => Ok(OplCmdTyp::DQM(None)),
-            _ => Err(OplError::new(OplErrorKind::ParseError(String::from("OplTyp ist nicht bekannt")))),
+            _ => Err(OplError::new(OplErrorKind::ParseError(String::from(
+                "OplTyp ist nicht bekannt",
+            )))),
         }
     }
 }
