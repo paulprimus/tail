@@ -1,15 +1,15 @@
 use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
-use crate::opltyp::OplCmd;
+use crate::opltyp::{OplAppCmd, OplCmd};
 use crate::parse::parse_root;
-use crate::term::print_root;
+use crate::term::{print_apps, print_config, print_root};
 use std::str::FromStr;
 
 #[derive(Debug)]
 pub struct ActionParam {
     pub env: Environment,
-    pub opltype: OplCmd,
+    pub oplcmd: OplCmd,
 }
 
 #[derive(Debug, PartialEq)]
@@ -33,12 +33,20 @@ impl FromStr for Environment {
     }
 }
 
-pub async fn do_action(action_param: ActionParam, config: Config) -> Result<(), OplError> {
+pub async fn dispatch(action_param: ActionParam, config: Config) -> Result<(), OplError> {
     //    println!("{:?} - {:?}", action_param, config);
     let stdout = tokio::io::stdout();
-    match &action_param.opltype {
+    match &action_param.oplcmd {
         OplCmd::FOMIS(offset) => list_root(&action_param, config, stdout, offset).await?,
-        OplCmd::DQM(offset) => list_root(&action_param, config, stdout, offset).await?,
+        OplCmd::DQM(oplappcmd) => {
+            match &oplappcmd {
+                OplAppCmd::LIST(offset) => list_root(&action_param, config, stdout, offset).await?,
+                OplAppCmd::CONFIG => list_config(config.dqm),
+            }
+            //list_root(&action_param, config, stdout, offset).await?
+        }
+        OplCmd::CONFIG => list_config(config, stdout).await?,
+        OplCmd::LIST => list_apps(config, stdout).await?,
         _ => unreachable!("Darf nicht passieren!"),
     };
     Ok(())
@@ -55,5 +63,23 @@ async fn list_root(
     let data = fetch_url(url).await?;
     let logs = parse_root(data.unwrap())?;
     print_root(stdout, logs, offset).await?;
+    Ok(())
+}
+
+async fn list_config(config: Config, stdout: tokio::io::Stdout, appcmd: Option<OplAppCmd>) -> Result<(), OplError> {
+    let mut value: String;
+    if appcmd.is_none() {
+        value = config.to_string();
+    } else {
+        match appcmd {
+            OplAppCmd::
+        }
+    }
+    print_config(stdout, config).await?;
+    Ok(())
+}
+
+async fn list_apps(config: Config, stdout: tokio::io::Stdout) -> Result<(), OplError> {
+    print_apps(stdout, config).await?;
     Ok(())
 }

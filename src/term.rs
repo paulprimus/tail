@@ -1,4 +1,6 @@
+use crate::config::Config;
 use crate::error::OplError;
+use crate::opltyp::OplCmd;
 use crate::parse::RootLogs;
 use chrono::prelude::*;
 use chrono::Duration;
@@ -51,5 +53,21 @@ async fn print_entry(
         writer.write(b", ").await?;
     }
     writer.write(b"\n").await?;
+    Ok(())
+}
+
+pub async fn print_config(stdout: tokio::io::Stdout, config: Config) -> Result<(), OplError> {
+    let mut writer = BufWriter::new(stdout);
+
+    writer.write(config.to_string().as_bytes()).await?;
+    writer.flush().await?;
+    Ok(())
+}
+
+pub async fn print_apps(stdout: tokio::io::Stdout, config: Config) -> Result<(), OplError> {
+    let mut writer = BufWriter::new(stdout);
+    writer.write(b"DQM\n").await?;
+    writer.write(b"FOMIS\n").await?;
+    writer.flush().await?;
     Ok(())
 }

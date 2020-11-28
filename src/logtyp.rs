@@ -1,6 +1,5 @@
-
 enum LogTyp {
     LOG,
     ACCESS,
-    STARTUP
+    STARTUP,
 }

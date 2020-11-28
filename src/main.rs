@@ -8,28 +8,28 @@ use clap::{App, AppSettings, Arg, ArgMatches};
 use crate::action::{ActionParam, Environment};
 use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
-use crate::opltyp::OplCmd;
+use crate::opltyp::{OplAppCmd, OplCmd};
 
 mod action;
 mod config;
 mod error;
 mod http;
+mod logtyp;
 mod opltyp;
 mod parse;
 mod term;
-mod logtyp;
 
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
     let action_param = parse_cli().await?;
     let config = create_config().await?;
-    action::do_action(action_param, config).await?;
+    action::dispatch(action_param, config).await?;
     Ok(())
 }
 
 async fn parse_cli() -> Result<ActionParam, OplError> {
     let matches = App::new("tail - following logs made easy!")
-        .version("0.1.4")
+        .version("0.1.5")
         .author("Paul Pacher")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(
@@ -81,7 +81,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
 
     let mut action_param = ActionParam {
         env: Environment::TEST,
-        opltype: OplCmd::CONFIG,
+        oplcmd: OplCmd::CONFIG,
     };
 
     match matches.subcommand() {
@@ -89,7 +89,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             action_param.env = match_env(fomis_matches);
             match fomis_matches.subcommand() {
                 ("list", Some(list_matches)) => {
-                    action_param.opltype = OplCmd::FOMIS(match_list(list_matches)?);
+                    action_param.oplcmd = OplCmd::FOMIS(match_list(list_matches)?);
                 }
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
@@ -99,11 +99,16 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             action_param.env = match_env(dqm_matches);
             match dqm_matches.subcommand() {
                 ("list", Some(list_matches)) => {
-                    action_param.opltype = OplCmd::DQM(match_list(list_matches)?);
+                    action_param.oplcmd = OplCmd::DQM(OplAppCmd::LIST(match_list(list_matches)?));
                 }
-                ("config", Some(_config_matches)) => {}
+                ("config", Some(_config_matches)) => {
+                    action_param.oplcmd = OplCmd::DQM(OplAppCmd::CONFIG)
+                }
                 _ => unreachable!(),
             }
+        }
+        ("list", Some(_list_matches)) => {
+            action_param.oplcmd = OplCmd::LIST;
         }
         _ => unreachable!(),
     }

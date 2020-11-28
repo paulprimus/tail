@@ -4,13 +4,19 @@ use serde::Deserialize;
 use crate::action::{ActionParam, Environment};
 use crate::error::{OplError, OplErrorKind};
 use crate::opltyp::OplCmd;
+use std::fmt;
 use std::fs::File;
 use std::io::Read;
+use std::path::Display;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    fomis: Fomis,
-    dqm: Dqm,
+    pub fomis: Fomis,
+    pub dqm: Dqm,
+}
+
+trait Appl {
+    get_config
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,7 +45,7 @@ fn parse() -> Result<Config, OplError> {
 
 impl Config {
     pub fn get_url_for(&self, action_param: &ActionParam) -> Result<String, OplError> {
-        let url: String = match action_param.opltype {
+        let url: String = match action_param.oplcmd {
             OplCmd::FOMIS(_offset) => {
                 if action_param.env == Environment::TEST {
                     self.fomis.root.test.to_string()
@@ -62,5 +68,31 @@ impl Config {
     pub fn new() -> Result<Config, OplError> {
         let config = parse()?;
         Ok(config)
+    }
+
+    pub fn getConfigFor() {}
+}
+
+impl fmt::Display for Config {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "DQM{}\nFOMIS{}\n", self.dqm, self.fomis)
+    }
+}
+
+impl fmt::Display for Dqm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.root)
+    }
+}
+
+impl fmt::Display for Fomis {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.root)
+    }
+}
+
+impl fmt::Display for Root {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\nTest: {}\nProd: {}", self.test, self.prod)
     }
 }

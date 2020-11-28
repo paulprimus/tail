@@ -6,7 +6,13 @@ use std::str::FromStr;
 #[derive(Debug, Clone)]
 pub enum OplCmd {
     FOMIS(Option<u32>),
-    DQM(Option<u32>),
+    DQM(OplAppCmd),
+    CONFIG,
+    LIST,
+}
+
+pub enum OplAppCmd {
+    LIST(Option<u32>),
     CONFIG,
 }
 
