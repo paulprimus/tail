@@ -15,8 +15,8 @@ pub struct Config {
     pub dqm: Dqm,
 }
 
-trait Appl {
-    get_config
+pub trait PrintableApp {
+    fn stringify(&self) -> String;
 }
 
 #[derive(Debug, Deserialize)]
@@ -27,6 +27,18 @@ struct Fomis {
 #[derive(Debug, Deserialize)]
 struct Dqm {
     root: Root,
+}
+
+impl PrintableApp for Dqm {
+    fn stringify(&self) -> String {
+
+        let mut v = String::from("Prod: ");
+        v.push_str(&self.root.prod);
+        v.push('\n');
+        v.push_str("Test: ");
+        v.push_str(&self.root.test);
+        v
+    }
 }
 
 #[derive(Debug, Deserialize)]

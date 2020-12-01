@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{Config, PrintableApp};
 use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
 use crate::opltyp::{OplAppCmd, OplCmd};
@@ -67,14 +67,15 @@ async fn list_root(
 }
 
 async fn list_config(config: Config, stdout: tokio::io::Stdout, appcmd: Option<OplAppCmd>) -> Result<(), OplError> {
-    let mut value: String;
-    if appcmd.is_none() {
+
         value = config.to_string();
-    } else {
-        match appcmd {
-            OplAppCmd::
-        }
-    }
+    print_config(stdout, config).await?;
+    Ok(())
+}
+
+async fn list_app_config<T: PrintableApp>(config: T, stdout: tokio::io::Stdout) -> Result<(), OplError> {
+
+    let value = config.stringify();
     print_config(stdout, config).await?;
     Ok(())
 }
