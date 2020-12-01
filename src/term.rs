@@ -1,6 +1,5 @@
 use crate::config::Config;
 use crate::error::OplError;
-use crate::opltyp::OplCmd;
 use crate::parse::RootLogs;
 use chrono::prelude::*;
 use chrono::Duration;
@@ -56,10 +55,9 @@ async fn print_entry(
     Ok(())
 }
 
-pub async fn print_config(stdout: tokio::io::Stdout, config: Config) -> Result<(), OplError> {
+pub async fn print_config(stdout: tokio::io::Stdout, config: String) -> Result<(), OplError> {
     let mut writer = BufWriter::new(stdout);
-
-    writer.write(config.to_string().as_bytes()).await?;
+    writer.write(config.as_bytes()).await?;
     writer.flush().await?;
     Ok(())
 }

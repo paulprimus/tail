@@ -25,7 +25,12 @@ impl fmt::Display for OplError {
                 f,
                 "Die angeführte Umgebung existiert nicht! Erlaubt sind: [test/prod]"
             ),
-            // OplErrorKind::Utf8Error => writeln!(f, "UTF-8 Fehler"),
+            OplErrorKind::LogTypNotFoundError(err) => writeln!(
+                f,
+                "Logtyp nicht vorhanden! Erlaubt sind: log|start|access \n{}",
+                err
+            ),
+          //  _ => {}
         }
     }
 }
@@ -55,5 +60,5 @@ pub enum OplErrorKind {
     HyperError(String),
     //IvalidUri,
     EnvironmentNotFoundError,
-    // Utf8Error,
+    LogTypNotFoundError(String), // Utf8Error,
 }

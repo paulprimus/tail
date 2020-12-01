@@ -7,7 +7,6 @@ use crate::opltyp::OplCmd;
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
-use std::path::Display;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -20,18 +19,28 @@ pub trait PrintableApp {
 }
 
 #[derive(Debug, Deserialize)]
-struct Fomis {
+pub struct Fomis {
     root: Root,
 }
 
 #[derive(Debug, Deserialize)]
-struct Dqm {
+pub struct Dqm {
     root: Root,
 }
 
 impl PrintableApp for Dqm {
     fn stringify(&self) -> String {
+        let mut v = String::from("Prod: ");
+        v.push_str(&self.root.prod);
+        v.push('\n');
+        v.push_str("Test: ");
+        v.push_str(&self.root.test);
+        v
+    }
+}
 
+impl PrintableApp for Fomis {
+    fn stringify(&self) -> String {
         let mut v = String::from("Prod: ");
         v.push_str(&self.root.prod);
         v.push('\n');
@@ -57,7 +66,7 @@ fn parse() -> Result<Config, OplError> {
 
 impl Config {
     pub fn get_url_for(&self, action_param: &ActionParam) -> Result<String, OplError> {
-        let url: String = match action_param.oplcmd {
+        let url: String = match &action_param.oplcmd {
             OplCmd::FOMIS(_offset) => {
                 if action_param.env == Environment::TEST {
                     self.fomis.root.test.to_string()
@@ -82,7 +91,7 @@ impl Config {
         Ok(config)
     }
 
-    pub fn getConfigFor() {}
+    pub fn get_config_for() {}
 }
 
 impl fmt::Display for Config {

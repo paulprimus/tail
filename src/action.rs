@@ -37,14 +37,19 @@ pub async fn dispatch(action_param: ActionParam, config: Config) -> Result<(), O
     //    println!("{:?} - {:?}", action_param, config);
     let stdout = tokio::io::stdout();
     match &action_param.oplcmd {
-        OplCmd::FOMIS(offset) => list_root(&action_param, config, stdout, offset).await?,
-        OplCmd::DQM(oplappcmd) => {
-            match &oplappcmd {
-                OplAppCmd::LIST(offset) => list_root(&action_param, config, stdout, offset).await?,
-                OplAppCmd::CONFIG => list_config(config.dqm),
+        //  OplCmd::FOMIS(offset) => list_root(&action_param, config, stdout, offset).await?,
+        OplCmd::FOMIS(oplappcmd) => match &oplappcmd {
+            OplAppCmd::LIST(offset, _typ) => {
+                list_root(&action_param, config, stdout, offset).await?
             }
-            //list_root(&action_param, config, stdout, offset).await?
-        }
+            OplAppCmd::CONFIG => list_app_config(config.fomis, stdout).await?,
+        },
+        OplCmd::DQM(oplappcmd) => match &oplappcmd {
+            OplAppCmd::LIST(offset, _typ) => {
+                list_root(&action_param, config, stdout, offset).await?
+            }
+            OplAppCmd::CONFIG => list_app_config(config.dqm, stdout).await?,
+        },
         OplCmd::CONFIG => list_config(config, stdout).await?,
         OplCmd::LIST => list_apps(config, stdout).await?,
         _ => unreachable!("Darf nicht passieren!"),
@@ -66,17 +71,18 @@ async fn list_root(
     Ok(())
 }
 
-async fn list_config(config: Config, stdout: tokio::io::Stdout, appcmd: Option<OplAppCmd>) -> Result<(), OplError> {
-
-        value = config.to_string();
-    print_config(stdout, config).await?;
+async fn list_config(config: Config, stdout: tokio::io::Stdout) -> Result<(), OplError> {
+    let value = config.to_string();
+    print_config(stdout, config.to_string()).await?;
     Ok(())
 }
 
-async fn list_app_config<T: PrintableApp>(config: T, stdout: tokio::io::Stdout) -> Result<(), OplError> {
-
+async fn list_app_config<T: PrintableApp>(
+    config: T,
+    stdout: tokio::io::Stdout,
+) -> Result<(), OplError> {
     let value = config.stringify();
-    print_config(stdout, config).await?;
+    print_config(stdout, value).await?;
     Ok(())
 }
 
