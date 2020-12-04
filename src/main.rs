@@ -9,14 +9,14 @@ use crate::action::{ActionParam, Environment};
 use crate::config::Config;
 use crate::error::{OplError, OplErrorKind};
 use crate::logtyp::LogTyp;
-use crate::opltyp::{OplAppCmd, OplCmd};
+use crate::oplcmd::{OplAppCmd, OplCmd};
 
 mod action;
 mod config;
 mod error;
 mod http;
 mod logtyp;
-mod opltyp;
+mod oplcmd;
 mod parse;
 mod term;
 

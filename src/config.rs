@@ -3,7 +3,7 @@ use serde::Deserialize;
 // use crate::action::Environment::TEST;
 use crate::action::{ActionParam, Environment};
 use crate::error::{OplError, OplErrorKind};
-use crate::opltyp::OplCmd;
+use crate::oplcmd::OplCmd;
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
@@ -90,8 +90,6 @@ impl Config {
         let config = parse()?;
         Ok(config)
     }
-
-    pub fn get_config_for() {}
 }
 
 impl fmt::Display for Config {

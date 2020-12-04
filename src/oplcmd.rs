@@ -25,7 +25,7 @@ impl FromStr for OplCmd {
             "FOMIS" => Ok(OplCmd::FOMIS(OplAppCmd::CONFIG)),
             "DQM" => Ok(OplCmd::DQM(OplAppCmd::CONFIG)),
             _ => Err(OplError::new(OplErrorKind::ParseError(String::from(
-                "OplTyp ist nicht bekannt",
+                "OplCmd ist nicht bekannt",
             )))),
         }
     }

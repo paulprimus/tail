@@ -1,6 +1,5 @@
-use crate::config::Config;
 use crate::error::OplError;
-use crate::parse::RootLogs;
+use crate::parse::{RootLogs, RootLog};
 use chrono::prelude::*;
 use chrono::Duration;
 use tokio::io::{AsyncWriteExt, BufWriter, Stdout};
@@ -43,12 +42,15 @@ async fn print_btree(
 async fn print_entry(
     writer: &mut BufWriter<Stdout>,
     date: Date<Utc>,
-    v: &[String],
+    v: &[RootLog],
 ) -> Result<(), OplError> {
     writer.write(date.to_string().as_bytes()).await?;
     writer.write(b": ").await?;
     for s in v {
-        writer.write(s.as_bytes()).await?;
+        writer.write(s.name.as_bytes()).await?;
+        writer.write(b"[").await?;
+        writer.write(s.log_typ.to_string().as_bytes()).await?;
+        writer.write(b"]").await?;
         writer.write(b", ").await?;
     }
     writer.write(b"\n").await?;
@@ -62,7 +64,7 @@ pub async fn print_config(stdout: tokio::io::Stdout, config: String) -> Result<(
     Ok(())
 }
 
-pub async fn print_apps(stdout: tokio::io::Stdout, config: Config) -> Result<(), OplError> {
+pub async fn print_apps(stdout: tokio::io::Stdout) -> Result<(), OplError> {
     let mut writer = BufWriter::new(stdout);
     writer.write(b"DQM\n").await?;
     writer.write(b"FOMIS\n").await?;
