@@ -30,7 +30,7 @@ impl fmt::Display for OplError {
                 "Logtyp nicht vorhanden! Erlaubt sind: log|start|access \n{}",
                 err
             ),
-          //  _ => {}
+            OplErrorKind::RootLogError => writeln!(f, "Fehler beim sortieren der Rootlog-Dateien nach Datum!")
         }
     }
 }
@@ -58,7 +58,7 @@ pub enum OplErrorKind {
     ParseError(String),
     FileNotFound(String),
     HyperError(String),
-    //IvalidUri,
+    RootLogError,
     EnvironmentNotFoundError,
     LogTypNotFoundError(String), // Utf8Error,
 }

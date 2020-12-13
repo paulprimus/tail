@@ -10,13 +10,14 @@ use std::collections::BTreeMap;
 pub struct RootLogs {
     pub url: String,
     pub title: String,
-    pub logs: BTreeMap<Date<Utc>, Vec<RootLog>>,
+    pub logs: Vec<RootLog>,
 }
 
 #[derive(Debug, Clone)]
 pub struct RootLog {
     pub log_typ: LogTyp,
-    pub name: String
+    pub name: String,
+    pub date: Date<Utc>
 }
 
 impl RootLogs {
@@ -24,18 +25,36 @@ impl RootLogs {
         RootLogs {
             url: String::new(),
             title: String::new(),
-            logs: BTreeMap::<Date<Utc>, Vec<RootLog>>::new(),
+            logs: Vec::<RootLog>::new()
         }
     }
 
-    fn append_log(&mut self, date: Date<Utc>, root_log: RootLog) -> Result<(), OplError> {
-        let mut list: Vec<RootLog> = match self.logs.get(&date) {
-            Some(v) => v.to_vec(),
-            None => Vec::<RootLog>::new(),
-        };
-        list.push(root_log);
-        self.logs.insert(date, list.to_vec());
+    // fn append_log(&mut self, date: Date<Utc>, root_log: RootLog) -> Result<(), OplError> {
+    //     let mut list: Vec<RootLog> = match self.logs.get(&date) {
+    //         Some(v) => v.to_vec(),
+    //         None => Vec::<RootLog>::new(),
+    //     };
+    //     list.push(root_log);
+    //     self.logs.insert(date, list.to_vec());
+    //     Ok(())
+    // }
+    fn add_log(&mut self, root_log: RootLog) -> Result<(), OplError> {
+        self.logs.push(root_log);
         Ok(())
+    }
+
+    pub fn get_logs_by_date(&self) -> Result<BTreeMap<Date<Utc>, Vec<RootLog>>, OplError> {
+        let mut map: BTreeMap<Date<Utc>, Vec<RootLog>> = BTreeMap::new();
+        for l in &self.logs {
+            let mut list: Vec<RootLog> = match map.get(&l.date) {
+               Some(v) => v.to_vec(),
+                None => Vec::<RootLog>::new()
+           };
+            let v = l.date;
+            list.push(l.clone());
+            map.insert(v, list);
+        }
+        Ok(map)
     }
 }
 
@@ -105,13 +124,13 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
             let mut log_typ = LogTyp::ALL;
             if re_access_log.is_match(&log_file_name) {
                 log_typ = LogTyp::ACCESS;
-            } else if (re_start_log.is_match(&log_file_name)) {
+            } else if re_start_log.is_match(&log_file_name) {
                 log_typ = LogTyp::START;
             } else {
                 log_typ = LogTyp::LOG;
             }
-            let root_log = RootLog {name: log_file_name, log_typ: log_typ};
-            root_logs.append_log(date, root_log)?;
+            let root_log = RootLog {name: log_file_name, log_typ: log_typ, date: date};
+            root_logs.add_log(root_log)?;
 
         }
     }

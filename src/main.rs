@@ -20,6 +20,7 @@ mod oplcmd;
 mod parse;
 mod term;
 
+
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
     let action_param = parse_cli().await?;

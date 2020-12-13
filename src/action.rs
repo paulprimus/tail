@@ -3,7 +3,7 @@ use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
 use crate::oplcmd::{OplAppCmd, OplCmd};
 use crate::parse::parse_root;
-use crate::term::{print_apps, print_config, print_root};
+use crate::term::{print_apps, print_config, print_root_by_date};
 use std::str::FromStr;
 use crate::logtyp::LogTyp;
 
@@ -69,7 +69,7 @@ async fn list_root(
     let url = config.get_url_for(&action_param)?;
     let data = fetch_url(url).await?;
     let logs = parse_root(data.unwrap())?;
-    print_root(stdout, logs, offset).await?;
+    print_root_by_date(stdout, logs, offset).await?;
     Ok(())
 }
 

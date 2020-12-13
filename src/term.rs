@@ -4,7 +4,7 @@ use chrono::prelude::*;
 use chrono::Duration;
 use tokio::io::{AsyncWriteExt, BufWriter, Stdout};
 
-pub async fn print_root(
+pub async fn print_root_by_date(
     stdout: tokio::io::Stdout,
     data: RootLogs,
     offset: &Option<u32>,
@@ -12,7 +12,9 @@ pub async fn print_root(
     let mut writer = BufWriter::new(stdout);
     if offset.is_none() {
         //println!("{:?}", data.logs);
-        for (k, v) in data.logs {
+
+        let map = data.get_logs_by_date().expect("Logdateien konnten nicht per Datum sortiert werden!");
+        for (k, v) in map {
             print_entry(&mut writer, k, &v).await?;
         }
         writer.flush().await?;
@@ -31,7 +33,8 @@ async fn print_btree(
 ) -> Result<(), OplError> {
     for i in 1..offset {
         let date = today - Duration::days(i as i64);
-        if let Some(v) = data.logs.get(&date) {
+        let btree = data.get_logs_by_date()?;
+        if let Some(v) = btree.get(&date) {
             print_entry(writer, date, v).await?;
         }
     }
