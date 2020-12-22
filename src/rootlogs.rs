@@ -1,23 +1,28 @@
 use crate::error::{OplError, OplErrorKind};
 use crate::http::HttpData;
-use crate::logtyp::{LogTyp};
+use crate::logtyp::LogTyp;
+use crate::opldate::OplDate;
 use chrono::prelude::*;
 use regex::Regex;
 use scraper::{Html, Selector};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::path::Path;
+use tokio::fs::{File, ReadDir};
+use tokio::io::{AsyncWriteExt, BufReader, Error};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RootLogs {
     pub url: String,
     pub title: String,
     pub logs: Vec<RootLog>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RootLog {
     pub log_typ: LogTyp,
     pub name: String,
-    pub date: Date<Utc>
+    pub date: OplDate,
 }
 
 impl RootLogs {
@@ -25,32 +30,23 @@ impl RootLogs {
         RootLogs {
             url: String::new(),
             title: String::new(),
-            logs: Vec::<RootLog>::new()
+            logs: Vec::<RootLog>::new(),
         }
     }
 
-    // fn append_log(&mut self, date: Date<Utc>, root_log: RootLog) -> Result<(), OplError> {
-    //     let mut list: Vec<RootLog> = match self.logs.get(&date) {
-    //         Some(v) => v.to_vec(),
-    //         None => Vec::<RootLog>::new(),
-    //     };
-    //     list.push(root_log);
-    //     self.logs.insert(date, list.to_vec());
-    //     Ok(())
-    // }
     fn add_log(&mut self, root_log: RootLog) -> Result<(), OplError> {
         self.logs.push(root_log);
         Ok(())
     }
 
-    pub fn get_logs_by_date(&self) -> Result<BTreeMap<Date<Utc>, Vec<RootLog>>, OplError> {
-        let mut map: BTreeMap<Date<Utc>, Vec<RootLog>> = BTreeMap::new();
+    pub fn get_logs_by_date(&self) -> Result<BTreeMap<OplDate, Vec<RootLog>>, OplError> {
+        let mut map: BTreeMap<OplDate, Vec<RootLog>> = BTreeMap::new();
         for l in &self.logs {
             let mut list: Vec<RootLog> = match map.get(&l.date) {
-               Some(v) => v.to_vec(),
-                None => Vec::<RootLog>::new()
-           };
-            let v = l.date;
+                Some(v) => v.to_vec(),
+                None => Vec::<RootLog>::new(),
+            };
+            let v = l.date.to_owned();
             list.push(l.clone());
             map.insert(v, list);
         }
@@ -129,9 +125,12 @@ pub fn parse_root(data: HttpData) -> Result<RootLogs, OplError> {
             } else {
                 log_typ = LogTyp::LOG;
             }
-            let root_log = RootLog {name: log_file_name, log_typ: log_typ, date: date};
+            let root_log = RootLog {
+                name: log_file_name,
+                log_typ: log_typ,
+                date: OplDate::from(date),
+            };
             root_logs.add_log(root_log)?;
-
         }
     }
     Ok(root_logs)
@@ -143,10 +142,42 @@ fn parse_titel(selector: &Selector, line: &str) -> Result<String, OplError> {
     Ok(v.inner_html())
 }
 
+const ROOTLOGS_JSON: &str = "rootlogs.json";
+const OBJECTS_PATH: &str = "objects";
+
+pub async fn write_json(root_logs: &RootLogs) -> Result<(), OplError> {
+    let root_logs_string = serde_json::to_string_pretty(root_logs)?;
+
+    //let v = serde_json::from_str(&root_logs_string)?;
+    let objects_dir = Path::new(OBJECTS_PATH);
+    if !objects_dir.exists() {
+        tokio::fs::create_dir(objects_dir).await?;
+    }
+
+    let json_file_path = objects_dir.join(Path::new(ROOTLOGS_JSON));
+    let mut json_file: File;
+    if json_file_path.exists() {
+        json_file = File::open(json_file_path).await?;
+    } else {
+        json_file = File::create(json_file_path).await?;
+    }
+    json_file.write_all(root_logs_string.as_bytes()).await?;
+    json_file.flush().await?;
+    Ok(())
+}
+
+pub async fn read_local_rootlogs() -> Result<RootLogs, OplError> {
+    let objects_dir = Path::new(OBJECTS_PATH);
+    let json_file_path = objects_dir.join(Path::new(ROOTLOGS_JSON));
+    let s = tokio::fs::read_to_string(json_file_path).await?;
+    let rootlogs: RootLogs = serde_json::from_str(&s)?;
+    Ok(rootlogs)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::http::HttpData;
-    use crate::parse;
+    use crate::rootlogs;
     use std::collections::HashMap;
     use std::fs;
     use std::io::{BufRead, BufReader};
@@ -154,6 +185,7 @@ mod tests {
     #[test]
     fn parse_root() {
         let f = fs::File::open("tests/fomis.log").expect("Datei konnte nicht geöffnet werden!");
+
         let reader = BufReader::new(f);
         let mut buf: Vec<Vec<u8>> = Vec::new();
         for r in reader.lines() {
@@ -171,7 +203,7 @@ mod tests {
             header: HashMap::new(),
             body: buf,
         };
-        let result = parse::parse_root(data);
+        let result = rootlogs::parse_root(data);
         assert_eq!(result.err(), None);
     }
 }

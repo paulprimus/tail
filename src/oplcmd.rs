@@ -14,7 +14,7 @@ pub enum OplCmd {
 
 #[derive(Debug, Clone)]
 pub enum OplAppCmd {
-    LIST(Option<u32>, LogTyp),
+    LIST(Option<u32>, LogTyp, bool),
     CONFIG,
 }
 

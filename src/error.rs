@@ -1,5 +1,6 @@
 use hyper::http;
 
+use serde_json::Error;
 use std::{error, fmt, io};
 
 #[derive(Debug, PartialEq)]
@@ -30,7 +31,16 @@ impl fmt::Display for OplError {
                 "Logtyp nicht vorhanden! Erlaubt sind: log|start|access \n{}",
                 err
             ),
-            OplErrorKind::RootLogError => writeln!(f, "Fehler beim sortieren der Rootlog-Dateien nach Datum!")
+            OplErrorKind::RootLogError => {
+                writeln!(f, "Fehler beim sortieren der Rootlog-Dateien nach Datum!")
+            }
+            OplErrorKind::SerdeError(err) => {
+                writeln!(
+                    f,
+                    "Fehler beim serialisieren/deserialisieren von einer Json-Datei: {} ",
+                    err
+                )
+            }
         }
     }
 }
@@ -53,6 +63,12 @@ impl From<hyper::Error> for OplError {
     }
 }
 
+impl From<serde_json::error::Error> for OplError {
+    fn from(err: Error) -> Self {
+        OplError::new(OplErrorKind::SerdeError(err.to_string()))
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum OplErrorKind {
     ParseError(String),
@@ -61,4 +77,5 @@ pub enum OplErrorKind {
     RootLogError,
     EnvironmentNotFoundError,
     LogTypNotFoundError(String), // Utf8Error,
+    SerdeError(String),
 }

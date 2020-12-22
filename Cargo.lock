@@ -694,6 +694,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "opl"
+version = "0.1.1"
+dependencies = [
+ "chrono",
+ "clap",
+ "crossterm",
+ "hyper",
+ "hyper-tls",
+ "regex",
+ "scraper",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "parking_lot"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1148,23 +1166,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
-]
-
-[[package]]
-name = "tail"
-version = "0.1.1"
-dependencies = [
- "chrono",
- "clap",
- "crossterm",
- "hyper",
- "hyper-tls",
- "regex",
- "scraper",
- "serde",
- "serde_derive",
- "tokio",
- "toml",
 ]
 
 [[package]]

@@ -17,9 +17,9 @@ mod error;
 mod http;
 mod logtyp;
 mod oplcmd;
-mod parse;
+mod opldate;
+mod rootlogs;
 mod term;
-
 
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
@@ -108,7 +108,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             match fomis_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     let x = match_list(list_matches)?;
-                    action_param.oplcmd = OplCmd::FOMIS(OplAppCmd::LIST(x.0, x.1));
+                    action_param.oplcmd = OplCmd::FOMIS(OplAppCmd::LIST(x.0, x.1, false));
                 }
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
@@ -119,7 +119,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             match dqm_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     let x = match_list(list_matches)?;
-                    action_param.oplcmd = OplCmd::DQM(OplAppCmd::LIST(x.0, x.1));
+                    action_param.oplcmd = OplCmd::DQM(OplAppCmd::LIST(x.0, x.1, true));
                 }
                 ("config", Some(_config_matches)) => {
                     action_param.oplcmd = OplCmd::DQM(OplAppCmd::CONFIG)
