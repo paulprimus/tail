@@ -1,0 +1,1031 @@
+{
+  "url": "http://tcommon31host.w.oenb.co.at:10000/fomis/",
+  "title": "",
+  "logs": [
+    {
+      "log_typ": "LOG",
+      "name": "fomis.log",
+      "date": "23.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_29486.log",
+      "date": "23.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-23.log",
+      "date": "23.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-22.1.log",
+      "date": "22.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-22.log",
+      "date": "22.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-22.0.log",
+      "date": "22.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_30537.log",
+      "date": "22.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_30505.log",
+      "date": "22.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-21.4.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-21.3.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-21.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_26327.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-21.2.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-21.1.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-21.0.log",
+      "date": "21.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-20.1.log",
+      "date": "20.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-20.log",
+      "date": "20.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-20.0.log",
+      "date": "20.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-19.0.log",
+      "date": "19.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-18.1.log",
+      "date": "18.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-18.log",
+      "date": "18.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-18.0.log",
+      "date": "18.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-17.1.log",
+      "date": "17.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-17.log",
+      "date": "17.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_4976.log",
+      "date": "17.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-17.0.log",
+      "date": "17.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_12253.log",
+      "date": "17.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-16.2.log",
+      "date": "16.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-16.log",
+      "date": "16.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-16.1.log",
+      "date": "16.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_2219.log",
+      "date": "16.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-16.0.log",
+      "date": "16.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-15.1.log",
+      "date": "15.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-15.log",
+      "date": "15.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-15.0.log",
+      "date": "15.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_12760.log",
+      "date": "15.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_704.log",
+      "date": "15.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_14648.log",
+      "date": "15.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-14.0.log",
+      "date": "14.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-13.0.log",
+      "date": "13.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-12.0.log",
+      "date": "12.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-11.1.log",
+      "date": "11.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-11.0.log",
+      "date": "11.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_29748.log",
+      "date": "11.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-11.log",
+      "date": "11.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-10.0.log",
+      "date": "10.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-10.log",
+      "date": "10.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-09.0.log",
+      "date": "09.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-09.log",
+      "date": "09.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_20044.log",
+      "date": "09.12.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_31062.log",
+      "date": "09.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-08.0.log",
+      "date": "08.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-07.0.log",
+      "date": "07.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-06.0.log",
+      "date": "06.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-05.0.log",
+      "date": "05.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-04.1.log",
+      "date": "04.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-04.log",
+      "date": "04.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-04.0.log",
+      "date": "04.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-03.0.log",
+      "date": "03.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-02.0.log",
+      "date": "02.12.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-12-02.log",
+      "date": "02.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-12-01.0.log",
+      "date": "01.12.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-30.1.log",
+      "date": "30.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-30.log",
+      "date": "30.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_18970.log",
+      "date": "30.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-30.0.log",
+      "date": "30.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_24456.log",
+      "date": "30.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-29.0.log",
+      "date": "29.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-28.0.log",
+      "date": "28.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-27.1.log",
+      "date": "27.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-27.log",
+      "date": "27.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-27.0.log",
+      "date": "27.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_18230.log",
+      "date": "27.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_3828.log",
+      "date": "27.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-26.2.log",
+      "date": "26.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_25687.log",
+      "date": "26.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-26.log",
+      "date": "26.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-26.1.log",
+      "date": "26.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-26.0.log",
+      "date": "26.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-25.1.log",
+      "date": "25.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-25.log",
+      "date": "25.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-25.0.log",
+      "date": "25.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_4088.log",
+      "date": "25.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_25501.log",
+      "date": "25.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-24.1.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-24.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_14318.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_8069.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_30577.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-24.0.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_26045.log",
+      "date": "24.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-23.0.log",
+      "date": "23.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-23.log",
+      "date": "23.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-22.0.log",
+      "date": "22.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-21.0.log",
+      "date": "21.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-20.0.log",
+      "date": "20.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-20.log",
+      "date": "20.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-19.0.log",
+      "date": "19.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-19.log",
+      "date": "19.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-18.2.log",
+      "date": "18.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-18.log",
+      "date": "18.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-18.1.log",
+      "date": "18.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-18.0.log",
+      "date": "18.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_28937.log",
+      "date": "18.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-17.0.log",
+      "date": "17.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_12439.log",
+      "date": "17.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-17.log",
+      "date": "17.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-16.0.log",
+      "date": "16.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-15.0.log",
+      "date": "15.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-14.0.log",
+      "date": "14.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-13.0.log",
+      "date": "13.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-13.log",
+      "date": "13.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_14811.log",
+      "date": "13.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-12.0.log",
+      "date": "12.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-11.0.log",
+      "date": "11.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-11.log",
+      "date": "11.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-10.0.log",
+      "date": "10.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-09.0.log",
+      "date": "09.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-09.log",
+      "date": "09.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-08.0.log",
+      "date": "08.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-07.0.log",
+      "date": "07.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-06.0.log",
+      "date": "06.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-06.log",
+      "date": "06.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-05.0.log",
+      "date": "05.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-05.log",
+      "date": "05.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-04.1.log",
+      "date": "04.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-04.log",
+      "date": "04.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-04.0.log",
+      "date": "04.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_19157.log",
+      "date": "04.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-03.5.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-03.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-03.4.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-03.3.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-03.2.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_4355.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_10337.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-03.1.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-03.0.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_7667.log",
+      "date": "03.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-02.0.log",
+      "date": "02.11.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-11-02.log",
+      "date": "02.11.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_8997.log",
+      "date": "02.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-11-01.0.log",
+      "date": "01.11.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-31.0.log",
+      "date": "31.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-30.0.log",
+      "date": "30.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-29.0.log",
+      "date": "29.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-29.log",
+      "date": "29.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-28.0.log",
+      "date": "28.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-27.0.log",
+      "date": "27.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-27.log",
+      "date": "27.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_16686.log",
+      "date": "27.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-26.0.log",
+      "date": "26.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-25.0.log",
+      "date": "25.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-24.0.log",
+      "date": "24.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-23.0.log",
+      "date": "23.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-22.0.log",
+      "date": "22.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-21.0.log",
+      "date": "21.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-20.0.log",
+      "date": "20.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-20.log",
+      "date": "20.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-19.0.log",
+      "date": "19.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-19.log",
+      "date": "19.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-18.0.log",
+      "date": "18.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-17.0.log",
+      "date": "17.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-16.1.log",
+      "date": "16.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-16.log",
+      "date": "16.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-16.0.log",
+      "date": "16.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_1690.log",
+      "date": "16.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_2539.log",
+      "date": "16.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-15.2.log",
+      "date": "15.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-15.log",
+      "date": "15.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-15.1.log",
+      "date": "15.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-15.0.log",
+      "date": "15.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-14.2.log",
+      "date": "14.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-14.log",
+      "date": "14.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-14.1.log",
+      "date": "14.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_17267.log",
+      "date": "14.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_5242.log",
+      "date": "14.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-14.0.log",
+      "date": "14.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-13.3.log",
+      "date": "13.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-13.log",
+      "date": "13.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-13.2.log",
+      "date": "13.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_29250.log",
+      "date": "13.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-13.1.log",
+      "date": "13.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-13.0.log",
+      "date": "13.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-12.1.log",
+      "date": "12.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-12.log",
+      "date": "12.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-12.0.log",
+      "date": "12.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_586.log",
+      "date": "12.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_17804.log",
+      "date": "12.10.2020"
+    },
+    {
+      "log_typ": "START",
+      "name": "startup_25209.log",
+      "date": "12.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-11.0.log",
+      "date": "11.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-10.0.log",
+      "date": "10.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-09.0.log",
+      "date": "09.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-08.0.log",
+      "date": "08.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-07.0.log",
+      "date": "07.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-07.log",
+      "date": "07.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-06.0.log",
+      "date": "06.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-06.log",
+      "date": "06.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-05.0.log",
+      "date": "05.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-05.log",
+      "date": "05.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-04.0.log",
+      "date": "04.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-03.0.log",
+      "date": "03.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-02.0.log",
+      "date": "02.10.2020"
+    },
+    {
+      "log_typ": "LOG",
+      "name": "fomis-2020-10-01.0.log",
+      "date": "01.10.2020"
+    },
+    {
+      "log_typ": "ACCESS",
+      "name": "access_log.2020-10-01.log",
+      "date": "01.10.2020"
+    }
+  ]
+}

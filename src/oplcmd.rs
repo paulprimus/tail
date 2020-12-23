@@ -34,9 +34,21 @@ impl FromStr for OplCmd {
 impl fmt::Display for OplCmd {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
-            OplCmd::FOMIS(_offset) => writeln!(f, "{}", "FOMIS".to_string()),
-            OplCmd::DQM(_offset) => writeln!(f, "{}", "DQM".to_string()),
+            Self::FOMIS(cmd) => writeln!(f, "{} {}", "FOMIS: ".to_string(), cmd),
+            Self::DQM(cmd) => writeln!(f, "{} {}", "DQM: ".to_string(), cmd),
             _ => writeln!(f, "{}", "sf".to_string()),
         }
+    }
+}
+
+impl fmt::Display for OplAppCmd {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+       match self {
+           OplAppCmd::LIST(o,logtyp , b) => {
+                let offset = o.map_or(String::from("No offset"), |d| d.to_string());
+               writeln!(f, "{} - {} - {}", offset, logtyp, b)
+           },
+           OplAppCmd::CONFIG=> writeln!(f, "{}", "test")
+       }
     }
 }

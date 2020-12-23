@@ -108,7 +108,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             match fomis_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     let x = match_list(list_matches)?;
-                    action_param.oplcmd = OplCmd::FOMIS(OplAppCmd::LIST(x.0, x.1, false));
+                    action_param.oplcmd = OplCmd::FOMIS(OplAppCmd::LIST(x.0, x.1, true));
                 }
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),

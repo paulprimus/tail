@@ -201,6 +201,9 @@ pub async fn read_local_rootlogs(oplcmd: &OplCmd) -> Result<RootLogs, OplError> 
     let objects_dir = Path::new(OBJECTS_PATH);
     let filename = get_filename(oplcmd).expect("Dateiname konnte nicht zusammengesetzt werden!");
     let json_file_path = objects_dir.join(Path::new(&filename));
+    if !json_file_path.exists() {
+        return Err(OplError::new(OplErrorKind::FileNotFound(String::from("Datei zuerst laden!"))));
+    }
     let s = tokio::fs::read_to_string(json_file_path).await?;
     let rootlogs: RootLogs = serde_json::from_str(&s)?;
     Ok(rootlogs)
