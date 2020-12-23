@@ -4,7 +4,7 @@ use serde::export::Formatter;
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum OplCmd {
     FOMIS(OplAppCmd),
     DQM(OplAppCmd),
@@ -12,7 +12,7 @@ pub enum OplCmd {
     LIST,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum OplAppCmd {
     LIST(Option<u32>, LogTyp, bool),
     CONFIG,

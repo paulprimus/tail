@@ -17,7 +17,7 @@ impl fmt::Display for LogTyp {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum LogTyp {
     LOG,
     ACCESS,

@@ -72,9 +72,10 @@ async fn list_root(
         let url = config.get_url_for(&action_param)?;
         let data = fetch_url(url).await?;
         logs = parse_root(data.unwrap())?;
-        write_json(&logs).await?;
+
+        write_json(&mut logs, &action_param.oplcmd).await?;
     } else {
-        logs=read_local_rootlogs().await?;
+        logs=read_local_rootlogs(&action_param.oplcmd).await?;
     }
 
     print_root_by_date(stdout, logs, offset).await?;
