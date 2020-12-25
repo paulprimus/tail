@@ -60,7 +60,13 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
                                 .long("typ")
                                 .takes_value(true)
                                 .help("Start|App|Access"),
-                        ),
+                        )
+                        .arg(Arg::with_name("fetch")
+                            .short("f")
+                            .long("fetch")
+                            .takes_value(false)
+                            .help("Daten werden von Webserver geholt. Wird dieses Argument nicht angeführt wird noch einem lokalen Json-File gesucht.")
+                        )
                 )
                 .subcommand(App::new("config")),
         )
@@ -82,15 +88,22 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
                                 .short("d")
                                 .long("day-offset")
                                 .takes_value(true)
-                                .help("Listet Logdateien der letzten angeführten Tage"),
+                                .help("Listet Logdateien der letzten angeführten Tage")
                         )
                         .arg(
                             Arg::with_name("log-typ")
                                 .short("t")
                                 .long("typ")
                                 .takes_value(true)
-                                .help("Start|App|Access"),
-                        ),
+                                .help("start|log|access")
+                        )
+                        .arg(Arg::with_name("fetch")
+                            .short("f")
+                            .long("fetch")
+                            .takes_value(false)
+                            .help("Daten werden von Webserver geholt. Wird dieses Argument nicht angeführt wird noch einem lokalen Json-File gesucht.")
+                        )
+                    ,
                 )
                 .subcommand(App::new("config")),
         )
@@ -108,7 +121,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             match fomis_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     let x = match_list(list_matches)?;
-                    action_param.oplcmd = OplCmd::FOMIS(OplAppCmd::LIST(x.0, x.1, true));
+                    action_param.oplcmd = OplCmd::FOMIS(OplAppCmd::LIST(x.0, x.1, x.2));
                 }
                 ("config", Some(_config_matches)) => {}
                 _ => unreachable!(),
@@ -119,7 +132,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             match dqm_matches.subcommand() {
                 ("list", Some(list_matches)) => {
                     let x = match_list(list_matches)?;
-                    action_param.oplcmd = OplCmd::DQM(OplAppCmd::LIST(x.0, x.1, true));
+                    action_param.oplcmd = OplCmd::DQM(OplAppCmd::LIST(x.0, x.1, x.2));
                 }
                 ("config", Some(_config_matches)) => {
                     action_param.oplcmd = OplCmd::DQM(OplAppCmd::CONFIG)
@@ -155,7 +168,7 @@ fn match_env(arg_matches: &ArgMatches) -> Environment {
     Environment::TEST
 }
 
-fn match_list(arg_matches: &ArgMatches) -> Result<(Option<u32>, LogTyp), OplError> {
+fn match_list(arg_matches: &ArgMatches) -> Result<(Option<u32>, LogTyp, bool), OplError> {
     let day_offset = arg_matches.value_of("day-offset");
     let mut opt_offset = Option::None;
     if day_offset.is_some() {
@@ -165,12 +178,16 @@ fn match_list(arg_matches: &ArgMatches) -> Result<(Option<u32>, LogTyp), OplErro
             .map_err(|err| OplError::new(OplErrorKind::ParseError(err.to_string())))?;
         opt_offset = Some(offset);
     }
-    let arg_typ_opt = arg_matches.value_of("typ");
+    let arg_typ_opt = arg_matches.value_of("log-typ");
+    println!("{:?}", arg_typ_opt);
     let mut log_typ = LogTyp::ALL;
     if arg_typ_opt.is_some() {
         log_typ = LogTyp::from_str(arg_typ_opt.unwrap())?;
+        println!("{}", log_typ);
     }
-    Ok((opt_offset, log_typ))
+    let arg_fetch = arg_matches.is_present("fetch");
+
+    Ok((opt_offset, log_typ, arg_fetch))
 }
 
 async fn create_config() -> Result<Config, OplError> {

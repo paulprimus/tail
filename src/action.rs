@@ -3,8 +3,9 @@ use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
 use crate::logtyp::LogTyp;
 use crate::oplcmd::{OplAppCmd, OplCmd};
-use crate::rootlogs::{parse_root, write_json, read_local_rootlogs, RootLogs};
+use crate::rootlogs::{parse_root, read_local_rootlogs, write_json, RootLogs};
 use crate::term::{print_apps, print_config, print_root_by_date};
+use std::ops::Deref;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -67,18 +68,17 @@ async fn list_root(
     fetch: bool,
 ) -> Result<(), OplError> {
     //let sdf = action_param.env;
-    let mut logs:RootLogs;
+    let mut logs: RootLogs;
     if fetch {
         let url = config.get_url_for(&action_param)?;
         let data = fetch_url(url).await?;
         logs = parse_root(data.unwrap())?;
-
         write_json(&mut logs, &action_param.oplcmd).await?;
     } else {
-        logs=read_local_rootlogs(&action_param.oplcmd).await?;
+        logs = read_local_rootlogs(&action_param.oplcmd).await?;
     }
+    print_root_by_date(stdout, logs, offset, typ).await?;
 
-    print_root_by_date(stdout, logs, offset).await?;
     Ok(())
 }
 
@@ -101,5 +101,3 @@ async fn list_apps(stdout: tokio::io::Stdout) -> Result<(), OplError> {
     print_apps(stdout).await?;
     Ok(())
 }
-
-

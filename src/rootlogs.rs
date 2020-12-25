@@ -1,6 +1,7 @@
 use crate::error::{OplError, OplErrorKind};
 use crate::http::HttpData;
 use crate::logtyp::LogTyp;
+use crate::oplcmd::OplCmd;
 use crate::opldate::OplDate;
 use chrono::prelude::*;
 use regex::Regex;
@@ -10,7 +11,6 @@ use std::collections::BTreeMap;
 use std::path::Path;
 use tokio::fs::{File, ReadDir};
 use tokio::io::{AsyncWriteExt, BufReader, Error};
-use crate::oplcmd::OplCmd;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RootLogs {
@@ -40,16 +40,30 @@ impl RootLogs {
         Ok(())
     }
 
-    pub fn get_logs_by_date(&self) -> Result<BTreeMap<OplDate, Vec<RootLog>>, OplError> {
+    pub fn get_logs_by_date(
+        &self,
+        logtyp: &LogTyp,
+    ) -> Result<BTreeMap<OplDate, Vec<RootLog>>, OplError> {
         let mut map: BTreeMap<OplDate, Vec<RootLog>> = BTreeMap::new();
         for l in &self.logs {
             let mut list: Vec<RootLog> = match map.get(&l.date) {
                 Some(v) => v.to_vec(),
                 None => Vec::<RootLog>::new(),
             };
-            let v = l.date.to_owned();
-            list.push(l.clone());
-            map.insert(v, list);
+            if *logtyp == LogTyp::ALL {
+                let v = l.date.to_owned();
+                list.push(l.clone());
+                map.insert(v, list);
+            } else {
+                if l.log_typ == *logtyp {
+                    list.push(l.to_owned());
+                }
+                if !list.is_empty() {
+                    let v = l.date.to_owned();
+                    //rootlogs.push(l.clone());
+                    map.insert(v, list);
+                }
+            }
         }
         Ok(map)
     }
@@ -153,14 +167,7 @@ pub async fn write_json(root_logs: &mut RootLogs, oplcmd: &OplCmd) -> Result<(),
     if !objects_dir.exists() {
         tokio::fs::create_dir(objects_dir).await?;
     }
-    // let mut filename:String;
-    // if oplcmd == OplCmd::FOMIS {
-    //     filename =ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_fomis");
-    //     root_logs.title=String::from("Fomis");
-    // } else if oplcmd == OplCmd::DQM {
-    //     filename =ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_dqm");
-    //     root_logs.title=String::from("Dqm");
-    // }
+
     let filename = get_filename(oplcmd).expect("Dateiname konnte nicht zusammengesetzt werden!");
     let json_file_path = objects_dir.join(Path::new(&filename));
     let mut json_file: File;
@@ -175,26 +182,21 @@ pub async fn write_json(root_logs: &mut RootLogs, oplcmd: &OplCmd) -> Result<(),
 }
 
 fn get_filename(oplcmd: &OplCmd) -> Result<String, OplError> {
-    let mut filename:String = String::from("error.json");
-    // if oplcmd.eq(OplCmd::FOMIS(hhh)) {
-    //     filename =ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_fomis");
-    // } else if oplcmd == OplCmd::DQM {
-    //     filename =ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_dqm");
-    // }
-   let result =  match oplcmd {
+    let mut filename: String = String::from("error.json");
+
+    let result = match oplcmd {
         OplCmd::FOMIS(_) => {
-            filename =ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_fomis");
+            filename = ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_fomis");
             Ok(filename)
-        },
+        }
         OplCmd::DQM(_) => {
-            filename =ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_dqm");
+            filename = ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_dqm");
             Ok(filename)
-        },
-        OplCmd::CONFIG => {Err(OplError::new(OplErrorKind::RootLogError))
-        },
-        OplCmd::LIST => {Err(OplError::new(OplErrorKind::RootLogError))}
+        }
+        OplCmd::CONFIG => Err(OplError::new(OplErrorKind::RootLogError)),
+        OplCmd::LIST => Err(OplError::new(OplErrorKind::RootLogError)),
     };
-result
+    result
 }
 
 pub async fn read_local_rootlogs(oplcmd: &OplCmd) -> Result<RootLogs, OplError> {
@@ -202,7 +204,9 @@ pub async fn read_local_rootlogs(oplcmd: &OplCmd) -> Result<RootLogs, OplError> 
     let filename = get_filename(oplcmd).expect("Dateiname konnte nicht zusammengesetzt werden!");
     let json_file_path = objects_dir.join(Path::new(&filename));
     if !json_file_path.exists() {
-        return Err(OplError::new(OplErrorKind::FileNotFound(String::from("Datei zuerst laden!"))));
+        return Err(OplError::new(OplErrorKind::FileNotFound(String::from(
+            "Datei zuerst laden!",
+        ))));
     }
     let s = tokio::fs::read_to_string(json_file_path).await?;
     let rootlogs: RootLogs = serde_json::from_str(&s)?;

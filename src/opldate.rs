@@ -40,8 +40,8 @@ impl From<String> for OplDate {
         let now = Utc::now();
         let d = NaiveDate::parse_from_str(s.as_str(), SERIALIZE_FORMAT)
             .map_err(|e| OplError::new(OplErrorKind::SerdeError(e.to_string())))
-            .map(|s| Date::from_utc(s, now.offset().to_owned())).unwrap()
-            ;
+            .map(|s| Date::from_utc(s, now.offset().to_owned()))
+            .unwrap();
         Self::from(d)
     }
 }

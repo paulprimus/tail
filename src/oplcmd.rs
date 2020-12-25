@@ -43,12 +43,12 @@ impl fmt::Display for OplCmd {
 
 impl fmt::Display for OplAppCmd {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-       match self {
-           OplAppCmd::LIST(o,logtyp , b) => {
+        match self {
+            OplAppCmd::LIST(o, logtyp, b) => {
                 let offset = o.map_or(String::from("No offset"), |d| d.to_string());
-               writeln!(f, "{} - {} - {}", offset, logtyp, b)
-           },
-           OplAppCmd::CONFIG=> writeln!(f, "{}", "test")
-       }
+                writeln!(f, "{} - {} - {}", offset, logtyp, b)
+            }
+            OplAppCmd::CONFIG => writeln!(f, "{}", "test"),
+        }
     }
 }

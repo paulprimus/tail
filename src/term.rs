@@ -6,6 +6,7 @@ use chrono::Duration;
 use tokio::io::{AsyncWriteExt, BufWriter, Stdout};
 
 use crate::error::OplError;
+use crate::logtyp::LogTyp;
 use crate::opldate::OplDate;
 use crate::rootlogs::{RootLog, RootLogs};
 
@@ -13,13 +14,14 @@ pub async fn print_root_by_date(
     stdout: tokio::io::Stdout,
     data: RootLogs,
     offset: &Option<u32>,
+    logtyp: &LogTyp,
 ) -> Result<(), OplError> {
     let mut writer = BufWriter::new(stdout);
     if offset.is_none() {
         //println!("{:?}", data.logs);
 
         let map: BTreeMap<OplDate, Vec<RootLog>> = data
-            .get_logs_by_date()
+            .get_logs_by_date(logtyp)
             .expect("Logdateien konnten nicht per Datum sortiert werden!");
         // for (k, v) in map {
         //     print_entry(&mut writer, k, &v).await?;
@@ -30,7 +32,7 @@ pub async fn print_root_by_date(
         writer.flush().await?;
     } else {
         let today = Utc::today();
-        print_btree(data, offset.unwrap(), &mut writer, today).await?;
+        print_btree(data, offset.unwrap(), &mut writer, today, &logtyp).await?;
     }
     Ok(())
 }
@@ -40,10 +42,11 @@ async fn print_btree(
     offset: u32,
     writer: &mut BufWriter<Stdout>,
     today: Date<Utc>,
+    typ: &LogTyp,
 ) -> Result<(), OplError> {
     for i in 0..offset {
         let date = today - Duration::days(i as i64);
-        let btree = data.get_logs_by_date()?;
+        let btree = data.get_logs_by_date(typ)?;
         if let Some(v) = btree.get(&OplDate::from(date)) {
             print_entry(writer, &date, v).await?;
         }
