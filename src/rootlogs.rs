@@ -60,7 +60,6 @@ impl RootLogs {
                 }
                 if !list.is_empty() {
                     let v = l.date.to_owned();
-                    //rootlogs.push(l.clone());
                     map.insert(v, list);
                 }
             }

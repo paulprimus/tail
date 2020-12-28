@@ -20,6 +20,7 @@ mod oplcmd;
 mod opldate;
 mod rootlogs;
 mod term;
+mod applog;
 
 #[tokio::main]
 async fn main() -> Result<(), OplError> {
