@@ -60,7 +60,7 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
                                 .short("t")
                                 .long("typ")
                                 .takes_value(true)
-                                .help("Start|App|Access"),
+                                .help("start|log|access"),
                         )
                         .arg(Arg::with_name("fetch")
                             .short("f")
@@ -186,7 +186,10 @@ fn match_list(arg_matches: &ArgMatches) -> Result<(Option<u32>, LogTyp, bool), O
         log_typ = LogTyp::from_str(arg_typ_opt.unwrap())?;
         println!("{}", log_typ);
     }
-    let arg_fetch = arg_matches.is_present("fetch");
+    let arg_fetch = match arg_matches.is_present("fetch") {
+        true => true,
+        false => false
+    };
 
     Ok((opt_offset, log_typ, arg_fetch))
 }
