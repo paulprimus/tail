@@ -6,16 +6,15 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum OplCmd {
-    FOMIS(OplAppCmd),
-    DQM(OplAppCmd),
     CONFIG,
-    LIST,
+    LIST(Option<u32>, LogTyp, bool),
+    FETCH(OplAppCmd)
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum OplAppCmd {
-    LIST(Option<u32>, LogTyp, bool),
-    CONFIG,
+    FOMIS,
+    DQM
 }
 
 impl FromStr for OplCmd {
