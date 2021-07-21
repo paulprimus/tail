@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 
-use hyper::{body::HttpBody, client::HttpConnector, StatusCode};
+use hyper::{body::HttpBody, client::HttpConnector, Client, StatusCode};
 use hyper_tls::HttpsConnector;
 
 // use crate::action::ActionParam;
@@ -53,7 +53,7 @@ pub async fn fetch_url(url: String) -> Result<Option<HttpData>, OplError> {
     //let url = config.get_url_for(action)?;
     let hyper_uri = url.parse::<hyper::Uri>()?;
     let https: HttpsConnector<HttpConnector> = HttpsConnector::new();
-    let client = hyper::Client::builder().build::<_, hyper::Body>(https);
+    let client = Client::builder().build::<_, hyper::Body>(https);
 
     let mut http_data = HttpData::new();
     http_data.url = url;

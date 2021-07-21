@@ -2,10 +2,9 @@ use crate::config::{Config, PrintableApp};
 use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
 use crate::logtyp::LogTyp;
-use crate::oplcmd::{OplAppCmd, OplCmd};
+use crate::oplcmd::{ListCmd, OplCmd};
 use crate::rootlogs::{parse_root, read_local_rootlogs, write_json, RootLogs};
 use crate::term::{print_apps, print_config, print_root_by_date};
-use std::ops::Deref;
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -40,21 +39,31 @@ pub async fn dispatch(action_param: ActionParam, config: Config) -> Result<(), O
     let stdout = tokio::io::stdout();
     match &action_param.oplcmd {
         //  OplCmd::FOMIS(offset) => list_root(&action_param, config, stdout, offset).await?,
-        OplCmd::FOMIS(oplappcmd) => match &oplappcmd {
-            OplAppCmd::LIST(offset, typ, fetch) => {
-                list_root(&action_param, config, stdout, offset, typ, fetch.to_owned()).await?
-            }
-            OplAppCmd::CONFIG => list_app_config(config.fomis, stdout).await?,
-        },
-        OplCmd::DQM(oplappcmd) => match &oplappcmd {
-            OplAppCmd::LIST(offset, typ, fetch) => {
-                list_root(&action_param, config, stdout, offset, typ, fetch.to_owned()).await?
-            }
-            OplAppCmd::CONFIG => list_app_config(config.dqm, stdout).await?,
-        },
+        // OplCmd::FOMIS(oplappcmd) => match &oplappcmd {
+        //     OplAppCmd::LIST(offset, typ, fetch) => {
+        //         list_root(&action_param, config, stdout, offset, typ, fetch.to_owned()).await?
+        //     }
+        //     OplAppCmd::CONFIG => list_app_config(config.fomis, stdout).await?,
+        // },
+        // OplCmd::DQM(oplappcmd) => match &oplappcmd {
+        //     OplAppCmd::LIST(offset, typ, fetch) => {
+        //         list_root(&action_param, config, stdout, offset, typ, fetch.to_owned()).await?
+        //     }
+        //     OplAppCmd::CONFIG => list_app_config(config.dqm, stdout).await?,
+        // },
         OplCmd::CONFIG => list_config(config, stdout).await?,
-        OplCmd::LIST => list_apps(stdout).await?,
-        //_ => unreachable!("Darf nicht passieren!"),
+        OplCmd::LIST(listcmd) => {
+            list_root(
+                &action_param,
+                config,
+                stdout,
+                &listcmd.offset,
+                &listcmd.logtyp,
+                listcmd.fetch,
+            )
+            .await?
+        }
+        OplCmd::VIEW => println!("todo: fehlt noch"), //_ => unreachable!("Darf nicht passieren!"),
     };
     Ok(())
 }

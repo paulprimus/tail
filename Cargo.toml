@@ -8,10 +8,10 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33"
-hyper = "0.13"
-hyper-tls = "0.4.1"
-tokio = { version = "0.2", features = ["full"] }
-crossterm = {version = "0.17" }
+hyper = {version = "0.14", features = ["full"] }
+hyper-tls = "0.5"
+tokio = { version = "1", features = ["full"] }
+crossterm = {version = "0.19" }
 regex = "1"
 scraper="0.12"
 toml = "0.5"

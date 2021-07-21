@@ -41,6 +41,9 @@ impl fmt::Display for OplError {
                     err
                 )
             }
+            OplErrorKind::AppNotFoundError(err) => {
+                writeln!(f, "App nicht vorhanden! Erlaubt sind: fomis|dqm {}\n", err)
+            }
         }
     }
 }
@@ -78,4 +81,5 @@ pub enum OplErrorKind {
     EnvironmentNotFoundError,
     LogTypNotFoundError(String), // Utf8Error,
     SerdeError(String),
+    AppNotFoundError(String),
 }

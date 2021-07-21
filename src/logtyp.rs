@@ -1,5 +1,4 @@
 use crate::error::{OplError, OplErrorKind};
-use crate::logtyp::LogTyp::LOG;
 use core::fmt;
 use serde::export::Formatter;
 use serde::{Deserialize, Serialize};

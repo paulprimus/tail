@@ -9,8 +9,8 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::Path;
-use tokio::fs::{File, ReadDir};
-use tokio::io::{AsyncWriteExt, BufReader, Error};
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RootLogs {
@@ -184,16 +184,17 @@ fn get_filename(oplcmd: &OplCmd) -> Result<String, OplError> {
     let mut filename: String = String::from("error.json");
 
     let result = match oplcmd {
-        OplCmd::FOMIS(_) => {
-            filename = ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_fomis");
-            Ok(filename)
-        }
-        OplCmd::DQM(_) => {
-            filename = ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_dqm");
-            Ok(filename)
-        }
+        // OplCmd::FOMIS(_) => {
+        //     filename = ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_fomis");
+        //     Ok(filename)
+        // }
+        // OplCmd::DQM(_) => {
+        //     filename = ROOTLOGS_JSON_FILE_NAME_TEMPLATE.replace("{}", "_dqm");
+        //     Ok(filename)
+        // }
         OplCmd::CONFIG => Err(OplError::new(OplErrorKind::RootLogError)),
-        OplCmd::LIST => Err(OplError::new(OplErrorKind::RootLogError)),
+        OplCmd::LIST(listcmd) => Err(OplError::new(OplErrorKind::RootLogError)),
+        OplCmd::VIEW => Err(OplError::new(OplErrorKind::RootLogError)),
     };
     result
 }
