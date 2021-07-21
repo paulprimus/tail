@@ -2,6 +2,7 @@ use crate::config::{Config, PrintableApp};
 use crate::error::{OplError, OplErrorKind};
 use crate::http::fetch_url;
 use crate::logtyp::LogTyp;
+use crate::oplapp::Oplapp;
 use crate::oplcmd::{ListCmd, OplCmd};
 use crate::rootlogs::{parse_root, read_local_rootlogs, write_json, RootLogs};
 use crate::term::{print_apps, print_config, print_root_by_date};
@@ -54,7 +55,7 @@ pub async fn dispatch(action_param: ActionParam, config: Config) -> Result<(), O
         OplCmd::CONFIG => list_config(config, stdout).await?,
         OplCmd::LIST(listcmd) => {
             list_root(
-                &action_param,
+                &listcmd.app,
                 config,
                 stdout,
                 &listcmd.offset,
@@ -69,7 +70,7 @@ pub async fn dispatch(action_param: ActionParam, config: Config) -> Result<(), O
 }
 
 async fn list_root(
-    action_param: &ActionParam,
+    oplApp: &Oplapp,
     config: Config,
     stdout: tokio::io::Stdout,
     offset: &Option<u32>,
@@ -79,10 +80,10 @@ async fn list_root(
     //let sdf = action_param.env;
     let mut logs: RootLogs;
     if fetch {
-        let url = config.get_url_for(&action_param)?;
+        let url = config.get_url_for(oplApp)?;
         let data = fetch_url(url).await?;
         logs = parse_root(data.unwrap())?;
-        write_json(&mut logs, &action_param.oplcmd).await?;
+        write_json(&mut logs, oplApp).await?;
     } else {
         logs = read_local_rootlogs(&action_param.oplcmd).await?;
     }

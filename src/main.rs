@@ -1,9 +1,10 @@
 extern crate clap;
 extern crate hyper;
 
-use clap::{App, AppSettings, Arg, ArgMatches};
 use std::process;
 use std::str::FromStr;
+
+use clap::{App, AppSettings, Arg, ArgMatches};
 
 use crate::action::{ActionParam, Environment};
 use crate::config::Config;
@@ -80,43 +81,43 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
                 // )
                // .subcommand(App::new("config")),
         )
-        .subcommand(
-            App::new("dqm")
-                .arg(
-                    Arg::with_name("env")
-                        .short("e")
-                        .long("environment")
-                        .help("[test|prod]")
-                        .takes_value(true),
-                )
-                .about("dqm app")
-                .setting(AppSettings::SubcommandRequiredElseHelp)
-                .subcommand(
-                    App::new("list")
-                        .arg(
-                            Arg::with_name("day-offset")
-                                .short("d")
-                                .long("day-offset")
-                                .takes_value(true)
-                                .help("Listet Logdateien der letzten angeführten Tage")
-                        )
-                        .arg(
-                            Arg::with_name("log-typ")
-                                .short("t")
-                                .long("typ")
-                                .takes_value(true)
-                                .help("start|log|access")
-                        )
-                        .arg(Arg::with_name("fetch")
-                            .short("f")
-                            .long("fetch")
-                            .takes_value(false)
-                            .help("Daten werden von Webserver geholt. Wird dieses Argument nicht angeführt wird noch einem lokalen Json-File gesucht.")
-                        )
-                    ,
-                )
-                .subcommand(App::new("config")),
-        )
+        // .subcommand(
+        //     App::new("dqm")
+        //         .arg(
+        //             Arg::with_name("env")
+        //                 .short("e")
+        //                 .long("environment")
+        //                 .help("[test|prod]")
+        //                 .takes_value(true),
+        //         )
+        //         .about("dqm app")
+        //         .setting(AppSettings::SubcommandRequiredElseHelp)
+        //         .subcommand(
+        //             App::new("list")
+        //                 .arg(
+        //                     Arg::with_name("day-offset")
+        //                         .short("d")
+        //                         .long("day-offset")
+        //                         .takes_value(true)
+        //                         .help("Listet Logdateien der letzten angeführten Tage")
+        //                 )
+        //                 .arg(
+        //                     Arg::with_name("log-typ")
+        //                         .short("t")
+        //                         .long("typ")
+        //                         .takes_value(true)
+        //                         .help("start|log|access")
+        //                 )
+        //                 .arg(Arg::with_name("fetch")
+        //                     .short("f")
+        //                     .long("fetch")
+        //                     .takes_value(false)
+        //                     .help("Daten werden von Webserver geholt. Wird dieses Argument nicht angeführt wird noch einem lokalen Json-File gesucht.")
+        //                 )
+        //             ,
+        //         )
+        //        .subcommand(App::new("config")),
+       // )
         .subcommand(App::new("list").help_message("Auflistung aller Services"))
         .get_matches();
 
@@ -128,9 +129,9 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
     match matches.subcommand() {
         ("list", Some(matches)) => {
             // action_param.env = match_list(matches);
-            let (env, offset, logtyp1, fetch) = match_list(matches)?;
+            let (oplapp, env, offset, logtyp1, fetch) = match_list(matches)?;
             let listCmd = ListCmd {
-                app: Oplapp::FOMIS,
+                app: oplapp,
                 offset: offset,
                 logtyp: logtyp1,
                 fetch: fetch,
@@ -147,18 +148,18 @@ async fn parse_cli() -> Result<ActionParam, OplError> {
             //     _ => unreachable!(),
             // }
         }
-        ("dqm", Some(dqm_matches)) => {
-            action_param.env = match_env(dqm_matches);
-            match dqm_matches.subcommand() {
-                ("list", Some(list_matches)) => {
-                    let x = match_list(list_matches)?;
-                }
-                // ("config", Some(_config_matches)) => {
-                //     action_param.oplcmd = OplCmd::DQM(OplAppCmd::CONFIG)
-                // }
-                _ => unreachable!(),
-            }
-        }
+        // ("dqm", Some(dqm_matches)) => {
+        //     action_param.env = match_env(dqm_matches);
+        //     match dqm_matches.subcommand() {
+        //         ("list", Some(list_matches)) => {
+        //             let x = match_list(list_matches)?;
+        //         }
+        //         // ("config", Some(_config_matches)) => {
+        //         //     action_param.oplcmd = OplCmd::DQM(OplAppCmd::CONFIG)
+        //         // }
+        //         _ => unreachable!(),
+        //     }
+        // }
         // ("list", Some(_list_matches)) => {
         //     action_param.oplcmd = OplCmd::LIST;
         // }
@@ -211,7 +212,9 @@ fn match_app(arg_matches: &ArgMatches) -> Result<Oplapp, OplError> {
 
 fn match_list(
     arg_matches: &ArgMatches,
-) -> Result<(Environment, Option<u32>, LogTyp, bool), OplError> {
+) -> Result<(Oplapp, Environment, Option<u32>, LogTyp, bool), OplError> {
+    let oplapp = match_app(arg_matches)?;
+
     let day_offset = arg_matches.value_of("day-offset");
     let mut opt_offset = Option::None;
     if day_offset.is_some() {
@@ -234,7 +237,7 @@ fn match_list(
     };
     let environment = match_env(arg_matches);
 
-    Ok((environment, opt_offset, log_typ, arg_fetch))
+    Ok((oplapp, environment, opt_offset, log_typ, arg_fetch))
 }
 
 async fn create_config() -> Result<Config, OplError> {

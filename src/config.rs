@@ -3,6 +3,7 @@ use serde::Deserialize;
 // use crate::action::Environment::TEST;
 use crate::action::{ActionParam, Environment};
 use crate::error::{OplError, OplErrorKind};
+use crate::oplapp::Oplapp;
 use crate::oplcmd::OplCmd;
 use std::fmt;
 use std::fs::File;
@@ -65,16 +66,16 @@ fn parse() -> Result<Config, OplError> {
 }
 
 impl Config {
-    pub fn get_url_for(&self, action_param: &ActionParam) -> Result<String, OplError> {
-        let url: String = match &action_param.oplcmd {
-            OplCmd::FOMIS(_offset) => {
+    pub fn get_url_for(&self, oplApp: &Oplapp) -> Result<String, OplError> {
+        let url: String = match oplApp {
+            Oplapp::FOMIS => {
                 if action_param.env == Environment::TEST {
                     self.fomis.root.test.to_string()
                 } else {
                     self.fomis.root.prod.to_string()
                 }
             }
-            OplCmd::DQM(_offset) => {
+            Oplapp::DQM => {
                 if action_param.env == Environment::TEST {
                     self.dqm.root.test.to_string()
                 } else {
